@@ -249,7 +249,7 @@ module GD2
     def init_with_image(ptr)  #:nodoc:
       # reentrant
       self.class.init_image_ptr(ptr) unless ptr.size > 0
-      @image_ptr = ptr
+      @image_ptr = FFIImagePtr.new(ptr)
       @palette = self.class.palette_class.new(self) unless
         @palette && @palette.image == self
       self
@@ -286,13 +286,13 @@ module GD2
 
     # Return the width of this image, in pixels.
     def width
-      image_ptr[:sx].read_int
+      image_ptr[:sx]
     end
     alias w width
 
     # Return the height of this image, in pixels.
     def height
-      image_ptr[:sy].read_int
+      image_ptr[:sy]
     end
     alias h height
 
@@ -338,7 +338,7 @@ module GD2
       ptr = image_ptr
       (0...height).each do |y|
         row = (0...width).inject(Array.new(width)) do |row, x|
-          row[x] = get_pixel.call(ptr, x, y).at(0)
+          row[x] = get_pixel(x, y)
           row
         end
         yield row
@@ -804,5 +804,42 @@ module GD2
       GD2FFI.send(:gdImageSharpen, image_ptr, pct.to_percent.round)
       self
     end
+  end
+
+  class FFIImagePtr < FFI::Struct
+    layout(
+      :pixels,            :pointer, # unsigned char**
+      :sx,                :int,
+      :sy,                :int,
+      :colorsTotal,       :int,
+      :red,               [ :int, 256 ],
+      :green,             [ :int, 256 ],
+      :blue,              [ :int, 256 ],
+      :open,              [ :int, 256 ],
+      :transparent,       :int,
+      :polyInts,          :pointer, # int*
+      :polyAllocated,     :int,
+      :brush,             :pointer, # gdImageStruct*
+      :tile,              :pointer, # gdImageStruct*
+      :brushColorMap,     [ :int, 256 ],
+      :tileColorMap,      [ :int, 256 ],
+      :styleLength,       :int,
+      :stylePos,          :int,
+      :style,             :pointer, # int*,
+      :interlace,         :int,
+      :thick,             :int,
+      :alpha,             [ :int, 256 ],
+      :trueColor,         :int,
+      :tpixels,           :pointer, # int**
+      :alphaBlendingFlag, :int,
+      :saveAlphaFlag,     :int,
+      :aa,                :int,
+      :aa_color,          :int,
+      :aa_dont_blend,     :int,
+      :cx1,               :int,
+      :cy1,               :int,
+      :cx2,               :int,
+      :cy2,               :int
+    )
   end
 end

@@ -186,10 +186,10 @@ module GD2
     def get_color(index)  #:nodoc:
       ptr = @image.image_ptr
       Color.new_from_palette(
-        ptr[:"red[#{index}]"],
-        ptr[:"green[#{index}]"],
-        ptr[:"blue[#{index}]"],
-        ptr[:"alpha[#{index}]"],
+        ptr[:red][index],
+        ptr[:green][index],
+        ptr[:blue][index],
+        ptr[:alpha][index],
         index, self)
     end
     protected :get_color
