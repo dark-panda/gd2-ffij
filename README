@@ -2,6 +2,10 @@
 Ruby/GD2 - Ruby binding for Thomas Boutell's gd 2.x graphics library
 Copyright (C) 2005-2006 Robert Leslie <rob@mars.org>
 
+FFI modifications copyright (C) 2009 J Smith <dark.panda@gmail.com>
+
+Roberts Notes:
+
 I wrote this Ruby library because I wasn't satisfied with the existing
 Ruby/GD extension library. Among other things, it had no support for
 creating images from PNG or JPEG data already in memory.
@@ -11,3 +15,14 @@ of the gd API is supported in some way, however the interface is quite
 different so that we can do things The Ruby Way as much as possible.
 
 Most of the documentation for this library is now in RDoc form.
+
+J's Notes:
+
+DL just doesn't want to work correctly on my x86_64 linux boxes and on
+OSX, so here's a refactoring use FFI.
+
+These modifications were partly inspired by Patrick Stenmark's
+work, which can be found at http://github.com/spatrik/gd2-ffi/,
+although the goal of these modifications are a complete GD2 Ruby
+library using FFI.
+
