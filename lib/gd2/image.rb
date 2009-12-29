@@ -1,7 +1,7 @@
 #
 # Ruby/GD2 -- Ruby binding for gd 2 graphics library
 #
-# Copyright © 2005-2006 Robert Leslie
+# Copyright © 2005-2006 Robert Leslie, 2009 J Smith <dark.panda@gmail.com>
 #
 # This file is part of Ruby/GD2.
 #
@@ -93,34 +93,29 @@ module GD2
         pos = src.pos
         magic = src.read(4)
         src.pos = pos
-        create = {
-          :jpeg => :gdImageCreateFromJpeg,
-          :png  => :gdImageCreateFromPng,
-          :gif  => :gdImageCreateFromGif,
-          :wbmp => :gdImageCreateFromWBMP,
-          :gd2  => :gdImageCreateFromGd2
-        }
-        args = [src.to_ptr]
+        data = src.read
+        args = [ data.length, data ]
       when String
         magic = src
-        create = {
-          :jpeg => :gdImageCreateFromJpegPtr,
-          :png  => :gdImageCreateFromPngPtr,
-          :gif  => :gdImageCreateFromGifPtr,
-          :wbmp => :gdImageCreateFromWBMPPtr,
-          :gd2  => :gdImageCreateFromGd2Ptr
-        }
-        args = [src.length, src]
+        args = [ src.length, src ]
       else
         raise TypeError, 'Unexpected argument type'
       end
+
+      create = {
+        :jpeg => :gdImageCreateFromJpegPtr,
+        :png  => :gdImageCreateFromPngPtr,
+        :gif  => :gdImageCreateFromGifPtr,
+        :wbmp => :gdImageCreateFromWBMPPtr,
+        :gd2  => :gdImageCreateFromGd2Ptr
+      }
 
       type = data_type(magic) or
         raise UnrecognizedImageTypeError, 'Image data format is not recognized'
       ptr = GD2FFI.send(create[type], *args)
       raise LibraryError unless ptr
 
-      init_image_ptr(ptr)
+      ptr = FFIImagePtr.new(ptr)
 
       image = (image_true_color?(ptr) ?
         TrueColor : IndexedColor).allocate.init_with_image(ptr)
@@ -153,16 +148,17 @@ module GD2
     # part of the image. Use options :x, :y, :width, and :height to specify the
     # part of the image to import.
     def self.import(filename, options = {})
+      raise Errno::ENOENT.new(filename) unless File.exists?(filename)
+
       unless format = options.delete(:format)
         md = filename.match(/\.([^.]+)\z/)
         format = md ? md[1].downcase : nil
       end
       format = format.to_sym if format
 
-      if format == :xpm
-        raise ArgumentError, "Unexpected options #{options.inspect}" unless
-          options.empty?
-        ptr = GD2FFI.send(:gdImageCreateFromXpm, filename)
+      ptr = if format == :xpm
+        raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
+        GD2FFI.send(:gdImageCreateFromXpm, filename)
       elsif format == :gd2 && !options.empty?
         x, y, width, height =
           options.delete(:x) || 0, options.delete(:y) || 0,
@@ -172,6 +168,7 @@ module GD2
           options.empty?
         raise ArgumentError, 'Missing required option :width' if width.nil?
         raise ArgumentError, 'Missing required option :height' if height.nil?
+        # TODO:
         ptr = File.open(filename, 'rb') do |file|
           GD2FFI.send(:gdImageCreateFromGd2Part, file, x, y, width, height)
         end
@@ -179,49 +176,32 @@ module GD2
         raise ArgumentError, "Unexpected options #{options.inspect}" unless
           options.empty?
         create_sym = {
-          :jpeg => :gdImageCreateFromJpeg,
-          :jpg  => :gdImageCreateFromJpeg,
-          :png  => :gdImageCreateFromPng,
-          :gif  => :gdImageCreateFromGif,
-          :wbmp => :gdImageCreateFromWBMP,
-          :gd   => :gdImageCreateFromGd,
-          :gd2  => :gdImageCreateFromGd2,
-          :xbm  => :gdImageCreateFromXbm
+          :jpeg => :gdImageCreateFromJpegPtr,
+          :jpg  => :gdImageCreateFromJpegPtr,
+          :png  => :gdImageCreateFromPngPtr,
+          :gif  => :gdImageCreateFromGifPtr,
+          :wbmp => :gdImageCreateFromWBMPPtr,
+          :gd   => :gdImageCreateFromGdPtr,
+          :gd2  => :gdImageCreateFromGd2Ptr,
+          :xbm  => :gdImageCreateFromXbmPtr
         }[format]
         raise UnrecognizedImageTypeError,
           'Format (or file extension) is not recognized' unless create_sym
-        ptr = File.open(filename, 'rb') { |file| GD2FFI.send(create_sym, file) }
+
+        file = File.read(filename)
+        file_ptr = FFI::MemoryPointer.new(file.size, 1, false)
+        file_ptr.put_bytes(0, file)
+
+        GD2FFI.send(create_sym, file.size, file_ptr)
       end
       raise LibraryError unless ptr
 
-      init_image_ptr(ptr)
+      ptr = FFIImagePtr.new(ptr)
 
       image = (image_true_color?(ptr) ?
         TrueColor : IndexedColor).allocate.init_with_image(ptr)
 
       block_given? ? yield(image) : image
-    end
-
-    def self.init_image_ptr(ptr)  #:nodoc:
-      ptr.size = 7268
-      ptr.free = GD2FFI.send(:gdImageDestroy)
-
-      c_ary = 'I' * MAX_COLORS
-      eval %{
-        ptr.struct!("PIII#{c_ary}#{c_ary}#{c_ary}#{c_ary}"  \
-                   "IPIPP#{c_ary}#{c_ary}IIPII#{c_ary}IPII",
-          :pixels, :sx, :sy, :colorsTotal,
-      } + Array.new(MAX_COLORS) { |i| ":\"red[#{i}]\", " }.join('') +
-          Array.new(MAX_COLORS) { |i| ":\"green[#{i}]\", " }.join('') +
-          Array.new(MAX_COLORS) { |i| ":\"blue[#{i}]\", " }.join('') +
-          Array.new(MAX_COLORS) { |i| ":\"open[#{i}]\", " }.join('') + %{
-          :transparent, :polyInts, :polyAllocated, :brush, :tile,
-      } + Array.new(MAX_COLORS) { |i| ":\"brushColorMap[#{i}]\", " }.join('') +
-          Array.new(MAX_COLORS) { |i| ":\"tileColorMap[#{i}]\", " }.join('') + %{
-          :styleLength, :stylePos, :style, :interlace, :thick,
-      } + Array.new(MAX_COLORS) { |i| ":\"alpha[#{i}]\", " }.join('') + %{
-          :trueColor, :tpixels, :alphaBlendingFlag, :saveAlphaFlag)
-      }
     end
 
     def self.image_true_color?(ptr)
@@ -239,7 +219,7 @@ module GD2
     end
 
     def self.release(ptr)
-      GD2FFI.send(:gdImageDestroy, ptr)
+      GD2FFI.send(:gdImageDestroy, ptr.image_ptr)
     end
 
     def init_with_size(sx, sy)  #:nodoc:
@@ -247,9 +227,12 @@ module GD2
     end
 
     def init_with_image(ptr)  #:nodoc:
-      # reentrant
-      self.class.init_image_ptr(ptr) unless ptr.size > 0
-      @image_ptr = FFIImagePtr.new(ptr)
+      @image_ptr = if ptr.is_a?(FFIImagePtr)
+        ptr
+      else
+        FFIImagePtr.new(ptr)
+      end
+
       @palette = self.class.palette_class.new(self) unless
         @palette && @palette.image == self
       self
@@ -332,9 +315,6 @@ module GD2
     # Iterate over each row of pixels in the image, returning an array of
     # pixel values.
     def each
-      # optimize for speed
-      #get_pixel = GD2LIB.send(:gdImageGetPixel)
-      p height
       ptr = image_ptr
       (0...height).each do |y|
         row = (0...width).inject(Array.new(width)) do |row, x|
@@ -508,9 +488,9 @@ module GD2
     def jpeg(quality = nil)
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImageJpegPtr, image_ptr, size, quality || -1)
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Encode and return data for this image in PNG format. The +level+
@@ -519,9 +499,9 @@ module GD2
     def png(level = nil)
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImagePngPtrEx, image_ptr, size, level || -1)
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Encode and return data for this image in GIF format. Note that GIF only
@@ -531,9 +511,9 @@ module GD2
     def gif
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImageGifPtr, image_ptr, size)
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Encode and return data for this image in WBMP format. WBMP currently
@@ -543,9 +523,9 @@ module GD2
     def wbmp(fgcolor)
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImageWBMPPtr, image_ptr, size, color2pixel(fgcolor))
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Encode and return data for this image in “.gd” format. This is an
@@ -553,9 +533,9 @@ module GD2
     def gd
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImageGdPtr, image_ptr, size)
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Encode and return data for this image in “.gd2” format. This is an
@@ -564,9 +544,9 @@ module GD2
     def gd2(fmt = FMT_COMPRESSED, chunk_size = 0)
       size = FFI::MemoryPointer.new(:pointer)
       ptr = GD2FFI.send(:gdImageGd2Ptr, image_ptr, chunk_size, fmt, size)
-      retval = ptr.get_bytes(0, size.get_int(0))
+      ptr.get_bytes(0, size.get_int(0))
+    ensure
       GD2FFI.send(:gdFree, ptr)
-      retval
     end
 
     # Copy a portion of another image to this image. If +src_w+ and +src_h+ are
@@ -806,7 +786,7 @@ module GD2
     end
   end
 
-  class FFIImagePtr < FFI::Struct
+  class FFIImagePtr < FFI::ManagedStruct
     layout(
       :pixels,            :pointer, # unsigned char**
       :sx,                :int,
@@ -841,5 +821,9 @@ module GD2
       :cx2,               :int,
       :cy2,               :int
     )
+
+    def self.release(ptr)
+      GD2FFI.gdImageDestroy(ptr)
+    end
   end
 end
