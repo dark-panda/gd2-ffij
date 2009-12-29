@@ -250,6 +250,7 @@ module GD2
 
       raise FreeTypeError.new(r.read_string) unless r.null?
       @fontpath = strex[:fontpath].read_string
+    ensure
       GD2FFI.send(:gdFree, strex[:fontpath])
     end
 
@@ -273,8 +274,11 @@ module GD2
       brect = brect.read_array_of_int(8)
 
       if !strex[:xshow].null? && (xshow = strex[:xshow])
-        xshow = xshow.read_string.split(' ').map { |e| e.to_f }
-        GD2FFI.send(:gdFree, strex[:xshow])
+        begin
+          xshow = xshow.read_string.split(' ').map { |e| e.to_f }
+        ensure
+          GD2FFI.send(:gdFree, strex[:xshow])
+        end
       else
         xshow = []
       end
