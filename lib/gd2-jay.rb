@@ -48,7 +48,7 @@ module GD2
       :gdImageCreateFromJpeg              => [ :pointer,  :pointer ],
       :gdImageCreateFromJpegPtr           => [ :pointer,  :int ],
       :gdImageCreateFromPng               => [ :pointer,  :pointer ],
-      :gdImageCreateFromPngPtr            => [ :pointer,  :int ],
+      :gdImageCreateFromPngPtr            => [ :pointer,  :int, :pointer ],
       :gdImageCreateFromGif               => [ :pointer,  :pointer ],
       :gdImageCreateFromGifPtr            => [ :pointer,  :int ],
       :gdImageCreateFromWBMP              => [ :pointer,  :pointer ],
