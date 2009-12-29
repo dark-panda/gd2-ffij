@@ -210,10 +210,7 @@ module GD2
     private_class_method :image_true_color?
 
     def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
-      ptr = FFI::AutoPointer.new(
-        GD2FFI.send(create_image_sym, sx, sy),
-        self.method(:release)
-      )
+      ptr = FFIImagePtr.new(GD2FFI.send(create_image_sym, sx, sy))
       GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
