@@ -46,7 +46,7 @@ module GD2
       :gdImageCreateTrueColor             => [ :pointer,  :int, :int ],
       :gdImageCreatePaletteFromTrueColor  => [ :pointer,  :pointer, :int, :int ],
       :gdImageCreateFromJpeg              => [ :pointer,  :pointer ],
-      :gdImageCreateFromJpegPtr           => [ :pointer,  :int ],
+      :gdImageCreateFromJpegPtr           => [ :pointer,  :int, :pointer ],
       :gdImageCreateFromPng               => [ :pointer,  :pointer ],
       :gdImageCreateFromPngPtr            => [ :pointer,  :int, :pointer ],
       :gdImageCreateFromGif               => [ :pointer,  :pointer ],
@@ -59,8 +59,8 @@ module GD2
       :gdImageCreateFromGd2Ptr            => [ :pointer,  :int, :pointer ],
       :gdImageCreateFromGd2Part           => [ :pointer,  :pointer, :int, :int, :int, :int ],
       :gdImageCreateFromXbm               => [ :pointer,  :pointer ],
-      :gdImageCreateFromXpm               => [ :pointer,  :string ],
-      :gdImageCompare                     => [ :int,      :pointer ],
+      :gdImageCreateFromXpm               => [ :pointer,  :pointer ],
+      :gdImageCompare                     => [ :int,      :pointer, :pointer ],
       :gdImageJpeg                        => [ :void,     :pointer, :pointer, :int ],
       :gdImageJpegPtr                     => [ :pointer,  :pointer, :pointer, :int ],
       :gdImagePngEx                       => [ :void,     :pointer, :pointer, :int ],
@@ -70,7 +70,7 @@ module GD2
       :gdImageWBMP                        => [ :void,     :pointer, :int, :pointer ],
       :gdImageWBMPPtr                     => [ :pointer,  :pointer, :pointer, :int ],
       :gdImageGd                          => [ :void,     :pointer, :pointer ],
-      :gdImageGdPtr                       => [ :pointer,  :pointer, :int ],
+      :gdImageGdPtr                       => [ :pointer,  :pointer, :pointer ],
       :gdImageGd2                         => [ :void,     :pointer, :pointer, :int, :int ],
       :gdImageGd2Ptr                      => [ :pointer,  :pointer, :int, :int, :pointer ],
       :gdImageDestroy                     => [ :void,     :pointer ],
@@ -173,6 +173,7 @@ require 'gd2/color'
 require 'gd2/palette'
 require 'gd2/canvas'
 require 'gd2/font'
+require 'gd2/ffi_struct'
 
 class Numeric
   if not self.instance_methods.include? 'degrees'
