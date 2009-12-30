@@ -156,10 +156,13 @@ module GD2
       end
       format = format.to_sym if format
 
-      ptr = if format == :xpm
-        raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
-        GD2FFI.send(:gdImageCreateFromXpm, filename)
-      elsif format == :gd2 && !options.empty?
+      ptr = # TODO: implement xpm and xbm imports
+      #if format == :xpm
+        #raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
+        #GD2FFI.send(:gdImageCreateFromXpm, filename)
+      #elsif format == :xbm
+        #GD2FFI.send(:gdImageCreateFromXbm, filename)
+      if format == :gd2 && !options.empty?
         x, y, width, height =
           options.delete(:x) || 0, options.delete(:y) || 0,
           options.delete(:width)  || options.delete(:w),
@@ -182,8 +185,7 @@ module GD2
           :gif  => :gdImageCreateFromGifPtr,
           :wbmp => :gdImageCreateFromWBMPPtr,
           :gd   => :gdImageCreateFromGdPtr,
-          :gd2  => :gdImageCreateFromGd2Ptr,
-          :xbm  => :gdImageCreateFromXbmPtr
+          :gd2  => :gdImageCreateFromGd2Ptr
         }[format]
         raise UnrecognizedImageTypeError,
           'Format (or file extension) is not recognized' unless create_sym
