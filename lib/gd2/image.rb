@@ -471,9 +471,12 @@ module GD2
         options.empty?
 
       File.open(filename, 'wb') do |file|
-        img = GD2FFI.send(write_sym, image_ptr, *args)
-        file.write(img.get_bytes(0, size.get_int(0)))
-        GD2FFI.gdFree(img)
+        begin
+          img = GD2FFI.send(write_sym, image_ptr, *args)
+          file.write(img.get_bytes(0, size.get_int(0)))
+        ensure
+          GD2FFI.gdFree(img)
+        end
       end
     end
 
