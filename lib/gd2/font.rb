@@ -1,5 +1,3 @@
-require 'ruby-debug'
-
 #
 # Ruby/GD2 -- Ruby binding for gd 2 graphics library
 #
@@ -23,18 +21,6 @@ require 'ruby-debug'
 #
 
 module GD2
-  class FTStringExtraPtr < FFI::Struct
-    layout(
-      :flags,       :int,
-      :linespacing, :double,
-      :charmap,     :int,
-      :hdpi,        :int,
-      :vdpi,        :int,
-      :xshow,       :pointer,
-      :fontpath,    :pointer
-    )
-  end
-
   #
   # = Description
   #
@@ -349,7 +335,7 @@ module GD2
       flags |= FTEX_XSHOW               if xshow
       flags |= FTEX_RETURNFONTPATHNAME  if returnfontpathname
 
-      strex = FTStringExtraPtr.new
+      strex = FFIStruct::FTStringExtraPtr.new
       strex[:flags] = flags
       strex[:linespacing] = @linespacing || 0.0
       strex[:charmap] = @charmap ? @charmap : 0

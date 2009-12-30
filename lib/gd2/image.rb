@@ -115,7 +115,7 @@ module GD2
       ptr = GD2FFI.send(create[type], *args)
       raise LibraryError unless ptr
 
-      ptr = FFIImagePtr.new(ptr)
+      ptr = FFIStruct::ImagePtr.new(ptr)
 
       image = (image_true_color?(ptr) ?
         TrueColor : IndexedColor).allocate.init_with_image(ptr)
@@ -196,7 +196,7 @@ module GD2
       end
       raise LibraryError unless ptr
 
-      ptr = FFIImagePtr.new(ptr)
+      ptr = FFIStruct::ImagePtr.new(ptr)
 
       image = (image_true_color?(ptr) ?
         TrueColor : IndexedColor).allocate.init_with_image(ptr)
@@ -210,7 +210,7 @@ module GD2
     private_class_method :image_true_color?
 
     def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
-      ptr = FFIImagePtr.new(GD2FFI.send(create_image_sym, sx, sy))
+      ptr = FFIStruct::ImagePtr.new(GD2FFI.send(create_image_sym, sx, sy))
       GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
@@ -224,10 +224,10 @@ module GD2
     end
 
     def init_with_image(ptr)  #:nodoc:
-      @image_ptr = if ptr.is_a?(FFIImagePtr)
+      @image_ptr = if ptr.is_a?(FFIStruct::ImagePtr)
         ptr
       else
-        FFIImagePtr.new(ptr)
+        FFIStruct::ImagePtr.new(ptr)
       end
 
       @palette = self.class.palette_class.new(self) unless
@@ -780,47 +780,6 @@ module GD2
     def sharpen(pct)  #:nodoc:
       GD2FFI.send(:gdImageSharpen, image_ptr, pct.to_percent.round)
       self
-    end
-  end
-
-  class FFIImagePtr < FFI::ManagedStruct
-    layout(
-      :pixels,            :pointer, # unsigned char**
-      :sx,                :int,
-      :sy,                :int,
-      :colorsTotal,       :int,
-      :red,               [ :int, 256 ],
-      :green,             [ :int, 256 ],
-      :blue,              [ :int, 256 ],
-      :open,              [ :int, 256 ],
-      :transparent,       :int,
-      :polyInts,          :pointer, # int*
-      :polyAllocated,     :int,
-      :brush,             :pointer, # gdImageStruct*
-      :tile,              :pointer, # gdImageStruct*
-      :brushColorMap,     [ :int, 256 ],
-      :tileColorMap,      [ :int, 256 ],
-      :styleLength,       :int,
-      :stylePos,          :int,
-      :style,             :pointer, # int*,
-      :interlace,         :int,
-      :thick,             :int,
-      :alpha,             [ :int, 256 ],
-      :trueColor,         :int,
-      :tpixels,           :pointer, # int**
-      :alphaBlendingFlag, :int,
-      :saveAlphaFlag,     :int,
-      :aa,                :int,
-      :aa_color,          :int,
-      :aa_dont_blend,     :int,
-      :cx1,               :int,
-      :cy1,               :int,
-      :cx2,               :int,
-      :cy2,               :int
-    )
-
-    def self.release(ptr)
-      GD2FFI.gdImageDestroy(ptr)
     end
   end
 end
