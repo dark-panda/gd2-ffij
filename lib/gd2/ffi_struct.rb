@@ -49,7 +49,6 @@ module GD2::FFIStruct
     )
 
     def self.release(ptr)
-      #puts "Releasing an FFIImagePtr! #{ptr}"
       GD2FFI.gdImageDestroy(ptr)
     end
   end
