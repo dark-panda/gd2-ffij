@@ -674,16 +674,15 @@ module GD2
     # +colors+ indicates the maximum number of palette colors to use, and
     # +dither+ controls whether dithering is used.
     def to_indexed_color(colors = MAX_COLORS, dither = true)
-      obj = IndexedColor.allocate
       ptr = GD2FFI.send(:gdImageCreatePaletteFromTrueColor,
         to_true_color.image_ptr, dither ? 1 : 0, colors)
       raise LibraryError unless ptr
 
-      obj.init_with_image(ptr)
+      obj = IndexedColor.allocate.init_with_image(ptr)
 
       # fix for gd bug where image->open[] is not properly initialized
-      (0...ptr[:colorsTotal]).each do |i|
-        ptr[:"open[#{i}]"] = 0
+      (0...obj.image_ptr[:colorsTotal]).each do |i|
+        obj.image_ptr[:open][i] = 0
       end
 
       obj
