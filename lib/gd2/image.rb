@@ -215,10 +215,6 @@ module GD2
       ptr
     end
 
-    def self.release(ptr)
-      GD2FFI.send(:gdImageDestroy, ptr.image_ptr)
-    end
-
     def init_with_size(sx, sy)  #:nodoc:
       init_with_image self.class.create_image_ptr(sx, sy)
     end
