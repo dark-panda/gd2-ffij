@@ -52,7 +52,7 @@ module GD2
     alias length size
 
     def allocated?(index)   #:nodoc:
-      @image.image_ptr[:"open[#{index}]"].zero?
+      @image.image_ptr[:open][index].zero?
     end
     protected :allocated?
 
@@ -90,11 +90,11 @@ module GD2
           Color.new_from_palette(0, 0, 0, 0, index, self))
       else
         ptr = @image.image_ptr
-        ptr[:"red[#{index}]"] = color.red
-        ptr[:"green[#{index}]"] = color.green
-        ptr[:"blue[#{index}]"] = color.blue
-        ptr[:"alpha[#{index}]"] = color.alpha
-        ptr[:"open[#{index}]"] = 0
+        ptr[:red][index] = color.red
+        ptr[:green][index] = color.green
+        ptr[:blue][index] = color.blue
+        ptr[:alpha][index] = color.alpha
+        ptr[:open][index] = 0
       end
     end
 
