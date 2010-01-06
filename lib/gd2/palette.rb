@@ -1,7 +1,7 @@
 #
 # Ruby/GD2 -- Ruby binding for gd 2 graphics library
 #
-# Copyright © 2005 Robert Leslie
+# Copyright © 2005 Robert Leslie, 2010 J Smith
 #
 # This file is part of Ruby/GD2.
 #
