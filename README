@@ -24,4 +24,11 @@ OSX, so here's a refactoring using FFI.
 These modifications were partly inspired by Patrick Stenmark's
 work, which can be found at http://github.com/spatrik/gd2-ffi/,
 although the goal of these modifications are a complete GD2 Ruby
-library using FFI.
+library using FFI. I've also included the beginning of a test suite,
+although coverage isn't quite complete yet..
+
+This GD2 library should "just work" as a replacement for Robert's
+original GD2 library, although without a complete test suite and
+the time and resources to do complete testing, it is difficult to
+know for sure. Reports on successful test runs are welcomed.
+
