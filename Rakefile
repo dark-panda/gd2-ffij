@@ -5,37 +5,27 @@ require 'rake/gempackagetask'
 require 'rake/testtask'
 
 $:.push 'lib'
-require 'gd2-jay'
 
-PKG_NAME    = 'gd2-jay'
-PKG_VERSION = GD2::VERSION
-
-spec = Gem::Specification.new do |s|
-  s.name              = PKG_NAME
-  s.version           = PKG_VERSION
-  s.summary           = 'Ruby interface to the GD2 library via FFI.'
-
-  s.files             = FileList['README', 'COPY*', 'Rakefile', 'lib/**/*.rb']
-  s.autorequire       = 'gd2-jay'
-  s.requirements     << 'libgd, v2.0.33 or greater'
-  s.test_files        = FileList['test/*.rb']
-
-  s.has_rdoc          = true
-  s.rdoc_options     << '--title' << 'Ruby/GD2' << '--charset' << 'utf-8'
-  s.extra_rdoc_files  = FileList['README', 'COPYING']
-
-  s.author            = 'J Smith'
-  s.email             = 'dark.panda@gmail.com'
-end
-
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.need_tar = true
+begin
+	require 'jeweler'
+	Jeweler::Tasks.new do |gem|
+		gem.name        = "gd2-ffij"
+		gem.version     = "0.0.1"
+		gem.summary     = "gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI"
+		gem.description = "gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI"
+		gem.email       = "dark.panda@gmail.com"
+		gem.homepage    = "http://github.com/dark.panda/gd2-ffij"
+		gem.authors =    [ "J Smith" ]
+		# gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+	end
+rescue LoadError
+	puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
 
 desc 'Test GD2 interface'
 Rake::TestTask.new(:test) do |t|
-    t.libs << 'lib'
-    t.pattern = 'test/**/*_test.rb'
-    t.verbose = false
+	t.libs << 'lib'
+	t.pattern = 'test/**/*_test.rb'
+	t.verbose = false
 end
 
