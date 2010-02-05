@@ -1,3 +1,4 @@
 *.kpf
 *~
 .DS_Store
+*tmp*
