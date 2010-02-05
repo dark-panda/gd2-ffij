@@ -30,7 +30,7 @@ module GD2
     def self.gd_library_name
       case Config::CONFIG['arch']
       when /darwin/
-        '/opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_ports_graphics_gd2/work/gd-2.0.35/.libs/libgd.2.dylib'
+        'libgd.2.dylib'
       when /mswin32/, /cygwin/
         'bgd.dll'
       else
