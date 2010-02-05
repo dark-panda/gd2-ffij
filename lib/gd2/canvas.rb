@@ -93,7 +93,7 @@ module GD2
       def draw(image, mode)
         GD2FFI.send(draw_sym, image.image_ptr, @points.map { |point|
           point.coordinates.pack('i_i_')
-        }.join('').to_ptr, @points.length, mode)
+        }.join(''), @points.length, mode)
         nil
       end
 
