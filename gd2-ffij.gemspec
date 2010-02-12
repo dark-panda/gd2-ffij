@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["J Smith"]
-  s.date = %q{2010-02-04}
+  s.date = %q{2010-02-11}
   s.description = %q{gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI}
   s.email = %q{dark.panda@gmail.com}
   s.extra_rdoc_files = [
@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
      "COPYRIGHT",
      "README",
      "Rakefile",
+     "gd2-ffij.gemspec",
      "lib/gd2-ffij.rb",
      "lib/gd2/canvas.rb",
      "lib/gd2/color.rb",
