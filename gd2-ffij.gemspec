@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["J Smith"]
   s.date = %q{2010-03-13}
-  s.description = %q{gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI}
+  s.description = %q{gd2-ffij is a refactoring of the Ruby/GD2 library implemented with FFI}
   s.email = %q{dark.panda@gmail.com}
   s.extra_rdoc_files = [
     "README"
@@ -76,7 +76,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI}
+  s.summary = %q{gd2-ffij is a refactoring of the Ruby/GD2 library implemented with FFI}
   s.test_files = [
     "test/canvas_test.rb",
      "test/image_test.rb",
