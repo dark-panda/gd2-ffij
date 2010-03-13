@@ -169,4 +169,18 @@ class CanvasTest < Test::Unit::TestCase
     end
     assert(image == load_image('test_filled_circle.gd2'))
   end
+
+  def test_fill_to
+    image = new_image
+    image.draw do |pen|
+      blue = image.palette.resolve(GD2::Color[32, 64, 128])
+      red  = image.palette.resolve(GD2::Color[255, 0, 0])
+      pen.color = blue
+      pen.arc(128, 128, 256, 64, 0..(Math::PI))
+      pen.color = red
+      pen.move(128, 128)
+      pen.fill_to(blue)
+    end
+    assert(image == load_image('test_fill_to.gd2'))
+  end
 end
