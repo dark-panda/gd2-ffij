@@ -84,7 +84,7 @@ module GD2
       :gdImageOpenPolygon                 => [ :void,     :pointer, :pointer, :int, :int ],
       :gdImageFilledPolygon               => [ :void,     :pointer, :pointer, :int, :int ],
       :gdImageArc                         => [ :void,     :pointer, :int, :int, :int, :int, :int, :int, :int ],
-      :gdImageFilledArc                   => [ :void,     :pointer, :int, :int, :int, :int, :int, :int, :int ],
+      :gdImageFilledArc                   => [ :void,     :pointer, :int, :int, :int, :int, :int, :int, :int, :int ],
   #   :gdImageEllipse                     => [ :void,     :pointer, :int, :int, :int, :int, :int ],
       :gdImageFilledEllipse               => [ :void,     :pointer, :int, :int, :int, :int, :int ],
       :gdImageFill                        => [ :void,     :pointer, :int, :int, :int ],
