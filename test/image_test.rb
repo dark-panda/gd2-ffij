@@ -126,14 +126,14 @@ class ImageTest < Test::Unit::TestCase
     assert(imgA == imgB)
   end
 
-  def test_resampled
+  def test_polar_transform
     imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).polar_transform!(100)
     imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_polar_transform.gd2'))
 
     assert(imgA == imgB)
   end
 
-  def test_resampled
+  def test_color_sharpened
     imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).sharpen(100)
     imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_sharpened.gd2'))
 
