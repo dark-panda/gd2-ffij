@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["J Smith"]
-  s.date = %q{2010-02-11}
+  s.date = %q{2010-03-13}
   s.description = %q{gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI}
   s.email = %q{dark.panda@gmail.com}
   s.extra_rdoc_files = [
@@ -41,28 +41,41 @@ Gem::Specification.new do |s|
      "test/images/test.xbm",
      "test/images/test.xcf",
      "test/images/test.xpm",
+     "test/images/test_arc.gd2",
      "test/images/test_canvas_filled_polygon.gd2",
      "test/images/test_canvas_filled_rectangle.gd2",
      "test/images/test_canvas_line.gd2",
      "test/images/test_canvas_move_to_and_line_to.gd2",
      "test/images/test_canvas_polygon.gd2",
      "test/images/test_canvas_rectangle.gd2",
+     "test/images/test_circle.gd2",
      "test/images/test_color.gd2",
      "test/images/test_color.png",
      "test/images/test_color.xcf",
      "test/images/test_color_indexed.gd2",
      "test/images/test_color_sharpened.gd2",
      "test/images/test_cropped.gd2",
+     "test/images/test_ellipse.gd2",
+     "test/images/test_fill.gd2",
+     "test/images/test_fill_to.gd2",
+     "test/images/test_filled_circle.gd2",
+     "test/images/test_filled_ellipse.gd2",
+     "test/images/test_filled_wedge.gd2",
      "test/images/test_polar_transform.gd2",
      "test/images/test_resampled.gd2",
      "test/images/test_resized.gd2",
      "test/images/test_rotated_180.gd2",
-     "test/test_helper.rb"
+     "test/images/test_text.gd2",
+     "test/images/test_text_circle.gd2",
+     "test/images/test_wedge.gd2",
+     "test/test_helper.rb",
+     "vendor/fonts/ttf/DejaVuSans.ttf",
+     "vendor/fonts/ttf/LICENSE"
   ]
   s.homepage = %q{http://github.com/dark.panda/gd2-ffij}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{gd2-ffij is refactoring of the Ruby/GD2 library implemented with FFI}
   s.test_files = [
     "test/canvas_test.rb",
