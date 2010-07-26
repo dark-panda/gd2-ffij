@@ -24,17 +24,23 @@ require 'ffi'
 require 'rbconfig'
 
 module GD2
-  VERSION = '0.0.1'.freeze
+  VERSION = '0.0.3'.freeze
 
   module GD2FFI
     def self.gd_library_name
-      case Config::CONFIG['arch']
-      when /darwin/
-        'libgd.2.dylib'
-      when /mswin32/, /cygwin/
-        'bgd.dll'
+      if ENV['GD2_LIBRARY_PATH']
+        ENV['GD2_LIBRARY_PATH']
       else
-        'libgd.so.2'
+        lib = case Config::CONFIG['arch']
+        when /darwin/
+          [ '/usr/lib', '/usr/local/lib', '/opt/local/lib' ].detect { |path|
+            File.exists?("#{path}/libgd.2.dylib")
+          }.to_s + '/libgd.2.dylib'
+        when /mswin32/, /cygwin/
+          'bgd.dll'
+        else
+          'libgd.so.2'
+        end
       end
     end
 
