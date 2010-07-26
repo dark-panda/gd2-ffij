@@ -124,7 +124,7 @@ module GD2
     end
 
     def self.data_type(str)
-      str = str.force_encoding("ASCII-8BIT")
+      str = str.force_encoding("ASCII-8BIT") if str.respond_to?(:force_encoding)
       case str
       when /\A\xff\xd8/
         :jpeg
