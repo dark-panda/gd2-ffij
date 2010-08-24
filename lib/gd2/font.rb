@@ -249,7 +249,7 @@ module GD2
     def draw(image_ptr, x, y, angle, string, fg)  #:nodoc:
       brect = FFI::MemoryPointer.new(:int, 8)
       strex = strex(true)
-      args = [ image_ptr, brect, fg, @fontname, @ptsize, angle.to_f, x, y, string.gsub('&', '&amp;'), strex ]
+      args = [ image_ptr, brect, fg, @fontname, @ptsize, angle.to_f, x.to_i, y.to_i, string.gsub('&', '&amp;'), strex ]
 
       r = GD2FFI.send(:gdImageStringFTEx, *args)
       raise FreeTypeError.new(r.read_string) unless r.null?
