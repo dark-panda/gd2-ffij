@@ -114,19 +114,17 @@ module GD2
     @@fontconfig = false
 
     def self.register(font)   #:nodoc:
-      Thread.critical = true
+      Thread.exclusive do
+        count = @@fontcount
+        @@fontcount += 1
 
-      count = @@fontcount
-      @@fontcount += 1
+        if count.zero?
+          raise FreeTypeError, 'FreeType library failed to initialize' unless
+            GD2FFI.send(:gdFontCacheSetup).zero?
+        end
 
-      if count.zero?
-        raise FreeTypeError, 'FreeType library failed to initialize' unless
-          GD2FFI.send(:gdFontCacheSetup).zero?
+        ObjectSpace.define_finalizer(font, font_finalizer)
       end
-
-      ObjectSpace.define_finalizer(font, font_finalizer)
-    ensure
-      Thread.critical = false
     end
 
     def self.font_finalizer
@@ -134,12 +132,10 @@ module GD2
     end
 
     def self.unregister
-      Thread.critical = true
-
-      @@fontcount -= 1
-      GD2FFI.send(:gdFontCacheShutdown) if @@fontcount.zero?
-    ensure
-      Thread.critical = false
+      Thread.exclusive do
+        @@fontcount -= 1
+        GD2FFI.send(:gdFontCacheShutdown) if @@fontcount.zero?
+      end
     end
 
     private_class_method :font_finalizer, :unregister
