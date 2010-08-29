@@ -104,7 +104,7 @@ module GD2
     def resolve(color)
       raise TypeError unless color.kind_of? Color
       c = GD2FFI.send(:gdImageColorResolveAlpha, @image.image_ptr,
-        color.red, color. green, color.blue, color.alpha)
+        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
@@ -113,7 +113,7 @@ module GD2
     def exact(color)
       raise TypeError unless color.kind_of? Color
       c = GD2FFI.send(:gdImageColorExactAlpha, @image.image_ptr,
-        color.red, color.green, color.blue, color.alpha)
+        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
@@ -129,7 +129,7 @@ module GD2
     def closest(color)
       raise TypeError unless color.kind_of? Color
       c = GD2FFI.send(:gdImageColorClosestAlpha, @image.image_ptr,
-        color.red, color.green, color.blue, color.alpha)
+        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
@@ -138,7 +138,7 @@ module GD2
     def closest_hwb(color)
       raise TypeError unless color.kind_of? Color
       c = GD2FFI.send(:gdImageColorClosestHWB, @image.image_ptr,
-        color.red, color.green, color.blue)
+        color.red.to_i, color.green.to_i, color.blue.to_i)
       c == -1 ? nil : get_color(c)
     end
 
@@ -148,7 +148,7 @@ module GD2
     def allocate(color)
       raise TypeError unless color.kind_of? Color
       c = GD2FFI.send(:gdImageColorAllocateAlpha, @image.image_ptr,
-        color.red, color.green, color.blue, color.alpha)
+        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? raise(Palette::PaletteFullError, 'Palette is full') :
         get_color(c)
     end
@@ -164,7 +164,7 @@ module GD2
     def deallocate(color)
       color = exact(color) unless color.index
       return nil if color.nil? || color.index.nil?
-      GD2FFI.send(:gdImageColorDeallocate, @image.image_ptr, color.index)
+      GD2FFI.send(:gdImageColorDeallocate, @image.image_ptr, color.index.to_i)
       nil
     end
 

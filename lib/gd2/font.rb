@@ -58,7 +58,7 @@ module GD2
         angle == 0.degrees || angle == 90.degrees
 
       GD2FFI.send(angle > 0 ? :gdImageStringUp : :gdImageString, image_ptr,
-        font_ptr, x, y, string, fg)
+        font_ptr, x.to_i, y.to_i, string, fg.to_i)
       nil
     end
   end
@@ -286,9 +286,9 @@ module GD2
       top, bottom, fgcolor
     ) #:nodoc:
       r = GD2FFI.send(
-        :gdImageStringFTCircle, image_ptr, cx, cy,
+        :gdImageStringFTCircle, image_ptr, cx.to_i, cy.to_i,
         radius.to_f, text_radius.to_f, fill_portion.to_f, @fontname, @ptsize,
-        top || '', bottom || '', fgcolor
+        top || '', bottom || '', fgcolor.to_i
       )
       raise FreeTypeError.new(r.read_string) unless r.null?
       nil

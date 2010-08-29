@@ -174,7 +174,7 @@ module GD2
         raise ArgumentError, 'Missing required option :height' if height.nil?
         # TODO:
         ptr = File.open(filename, 'rb') do |file|
-          GD2FFI.send(:gdImageCreateFromGd2Part, file, x, y, width, height)
+          GD2FFI.send(:gdImageCreateFromGd2Part, file, x.to_i, y.to_i, width.to_i, height.to_i)
         end
       else
         raise ArgumentError, "Unexpected options #{options.inspect}" unless
@@ -213,7 +213,7 @@ module GD2
     private_class_method :image_true_color?
 
     def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
-      ptr = FFIStruct::ImagePtr.new(GD2FFI.send(create_image_sym, sx, sy))
+      ptr = FFIStruct::ImagePtr.new(GD2FFI.send(create_image_sym, sx.to_i, sy.to_i))
       GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
@@ -288,13 +288,13 @@ module GD2
 
     # Return the pixel value at image location (+x+, +y+).
     def get_pixel(x, y)
-      GD2FFI.send(:gdImageGetPixel, @image_ptr, x, y)
+      GD2FFI.send(:gdImageGetPixel, @image_ptr, x.to_i, y.to_i)
     end
     alias pixel get_pixel
 
     # Set the pixel value at image location (+x+, +y+).
     def set_pixel(x, y, value)
-      GD2FFI.send(:gdImageSetPixel, @image_ptr, x, y, value)
+      GD2FFI.send(:gdImageSetPixel, @image_ptr, x.to_i, y.to_i, value.to_i)
       nil
     end
 
@@ -401,7 +401,7 @@ module GD2
       clip = clipping
       begin
         p clipping
-        GD2FFI.send(:gdImageSetClip, image_ptr, x1, y1, x2, y2)
+        GD2FFI.send(:gdImageSetClip, image_ptr, x1.to_i, y1.to_i, x2.to_i, y2.to_i)
         p clipping
         yield self
         self
@@ -412,7 +412,7 @@ module GD2
 
     # Return *true* if the current clipping rectangle excludes the given point.
     def clips?(x, y)
-      GD2FFI.send(:gdImageBoundsSafe, image_ptr, x, y).zero?
+      GD2FFI.send(:gdImageBoundsSafe, image_ptr, x.to_i, y.to_i).zero?
     end
 
     # Provide a drawing environment for a block. See GD2::Canvas.
@@ -497,7 +497,7 @@ module GD2
     # compression (0 = none, 1 = minimal but fast, 9 = best but slow).
     def png(level = nil)
       size = FFI::MemoryPointer.new(:pointer)
-      ptr = GD2FFI.send(:gdImagePngPtrEx, image_ptr, size, level || -1)
+      ptr = GD2FFI.send(:gdImagePngPtrEx, image_ptr, size, level.to_i || -1)
       ptr.get_bytes(0, size.get_int(0))
     ensure
       GD2FFI.send(:gdFree, ptr)
@@ -542,7 +542,7 @@ module GD2
     # The specified +fmt+ may be either GD2::FMT_RAW or GD2::FMT_COMPRESSED.
     def gd2(fmt = FMT_COMPRESSED, chunk_size = 0)
       size = FFI::MemoryPointer.new(:pointer)
-      ptr = GD2FFI.send(:gdImageGd2Ptr, image_ptr, chunk_size, fmt, size)
+      ptr = GD2FFI.send(:gdImageGd2Ptr, image_ptr, chunk_size.to_i, fmt.to_i, size)
       ptr.get_bytes(0, size.get_int(0))
     ensure
       GD2FFI.send(:gdFree, ptr)
@@ -556,10 +556,10 @@ module GD2
       raise ArgumentError unless src_w.nil? == src_h.nil?
       if src_w
         GD2FFI.send(:gdImageCopyResampled, image_ptr, other.image_ptr,
-          dst_x, dst_y, src_x, src_y, dst_w, dst_h, src_w, src_h)
+          dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i, src_w.to_i, src_h.to_i)
       else
         GD2FFI.send(:gdImageCopy, image_ptr, other.image_ptr,
-          dst_x, dst_y, src_x, src_y, dst_w, dst_h)
+          dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i)
       end
       self
     end
@@ -570,7 +570,7 @@ module GD2
     # may be floating point.
     def copy_from_rotated(other, dst_x, dst_y, src_x, src_y, w, h, angle)
       GD2FFI.send(:gdImageCopyRotated, image_ptr, other.image_ptr,
-        dst_x.to_f, dst_y.to_f, src_x, src_y, w, h, angle.to_degrees.round)
+        dst_x.to_f, dst_y.to_f, src_x.to_i, src_y.to_i, w.to_i, h.to_i, angle.to_degrees.round.to_i)
       self
     end
 
@@ -580,7 +580,7 @@ module GD2
     # channel information from the source image is ignored.
     def merge_from(other, dst_x, dst_y, src_x, src_y, w, h, pct)
       GD2FFI.send(:gdImageCopyMerge, image_ptr, other.image_ptr,
-        dst_x, dst_y, src_x, src_y, w, h, pct.to_percent.round)
+        dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
       self
     end
 
@@ -589,7 +589,7 @@ module GD2
     def rotate!(angle, axis_x = width / 2.0, axis_y = height / 2.0)
       ptr = self.class.create_image_ptr(width, height, alpha_blending?)
       GD2FFI.send(:gdImageCopyRotated, ptr, image_ptr,
-        axis_x.to_f, axis_y.to_f, 0, 0, width, height, angle.to_degrees.round)
+        axis_x.to_f, axis_y.to_f, 0, 0, width.to_i, height.to_i, angle.to_degrees.round.to_i)
       init_with_image(ptr)
     end
 
@@ -602,7 +602,7 @@ module GD2
     # (0, 0).
     def crop!(x, y, w, h)
       ptr = self.class.create_image_ptr(w, h, alpha_blending?)
-      GD2FFI.send(:gdImageCopy, ptr, image_ptr, 0, 0, x, y, w, h)
+      GD2FFI.send(:gdImageCopy, ptr, image_ptr, 0, 0, x.to_i, y.to_i, w.to_i, h.to_i)
       init_with_image(ptr)
     end
 
@@ -616,7 +616,7 @@ module GD2
     def uncrop!(x1, y1 = x1, x2 = x1, y2 = y1)
       ptr = self.class.create_image_ptr(x1 + width + x2, y1 + height + y2,
         alpha_blending?)
-      GD2FFI.send(:gdImageCopy, ptr, image_ptr, x1, y1, 0, 0, width, height)
+      GD2FFI.send(:gdImageCopy, ptr, image_ptr, x1.to_i, y1.to_i, 0, 0, width.to_i, height.to_i)
       init_with_image(ptr)
     end
 
@@ -631,7 +631,7 @@ module GD2
     def resize!(w, h, resample = true)
       ptr = self.class.create_image_ptr(w, h, false)
       GD2FFI.send(resample ? :gdImageCopyResampled : :gdImageCopyResized,
-        ptr, image_ptr, 0, 0, 0, 0, w, h, width, height)
+        ptr, image_ptr, 0, 0, 0, 0, w.to_i, h.to_i, width.to_i, height.to_i)
       alpha_blending = alpha_blending?
       init_with_image(ptr)
       self.alpha_blending = alpha_blending
@@ -649,7 +649,7 @@ module GD2
     # Note that the original image must be square.
     def polar_transform!(radius)
       raise 'Image must be square' unless width == height
-      ptr = GD2FFI.send(:gdImageSquareToCircle, image_ptr, radius)
+      ptr = GD2FFI.send(:gdImageSquareToCircle, image_ptr, radius.to_i)
       raise LibraryError unless ptr
       init_with_image(ptr)
     end
@@ -676,7 +676,7 @@ module GD2
     # +dither+ controls whether dithering is used.
     def to_indexed_color(colors = MAX_COLORS, dither = true)
       ptr = GD2FFI.send(:gdImageCreatePaletteFromTrueColor,
-        to_true_color.image_ptr, dither ? 1 : 0, colors)
+        to_true_color.image_ptr, dither ? 1 : 0, colors.to_i)
       raise LibraryError unless ptr
 
       obj = IndexedColor.allocate.init_with_image(ptr)
@@ -758,7 +758,7 @@ module GD2
     def merge_from(other, dst_x, dst_y, src_x, src_y, w, h, pct, gray = false)
       return super(other, dst_x, dst_y, src_x, src_y, w, h, pct) unless gray
       GD2FFI.send(:gdImageCopyMergeGray, image_ptr, other.image_ptr,
-        dst_x, dst_y, src_x, src_y, w, h, pct.to_percent.round)
+        dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
       self
     end
   end
@@ -779,7 +779,7 @@ module GD2
     end
 
     def sharpen(pct)  #:nodoc:
-      GD2FFI.send(:gdImageSharpen, image_ptr, pct.to_percent.round)
+      GD2FFI.send(:gdImageSharpen, image_ptr, pct.to_percent.round.to_i)
       self
     end
   end

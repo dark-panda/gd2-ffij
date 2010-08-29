@@ -59,7 +59,7 @@ module GD2
 
       def draw(image, mode)
         GD2FFI.send(:gdImageLine, image.image_ptr,
-          @p1.x, @p1.y, @p2.x, @p2.y, mode)
+          @p1.x.to_i, @p1.y.to_i, @p2.x.to_i, @p2.y.to_i, mode.to_i)
         nil
       end
     end
@@ -70,7 +70,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(draw_sym, image.image_ptr, @p1.x, @p1.y, @p2.x, @p2.y, mode)
+        GD2FFI.send(draw_sym, image.image_ptr, @p1.x.to_i, @p1.y.to_i, @p2.x.to_i, @p2.y.to_i, mode.to_i)
         nil
       end
 
@@ -93,7 +93,7 @@ module GD2
       def draw(image, mode)
         GD2FFI.send(draw_sym, image.image_ptr, @points.map { |point|
           point.coordinates.pack('i_i_')
-        }.join(''), @points.length, mode)
+        }.join(''), @points.length, mode.to_i)
         nil
       end
 
@@ -122,9 +122,9 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x, @center.y,
-          @width, @height,
-          @range.begin.to_degrees.round, @range.end.to_degrees.round, mode)
+        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+          @width.to_i, @height.to_i,
+          @range.begin.to_degrees.round.to_i, @range.end.to_degrees.round.to_i, mode.to_i)
         nil
       end
     end
@@ -144,10 +144,10 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageFilledArc, image.image_ptr, @center.x, @center.y,
-          @width, @height,
-          @range.begin.to_degrees.round, @range.end.to_degrees.round,
-          mode, style)
+        GD2FFI.send(:gdImageFilledArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+          @width.to_i, @height.to_i,
+          @range.begin.to_degrees.round.to_i, @range.end.to_degrees.round.to_i,
+          mode.to_i, style.to_i)
         nil
       end
 
@@ -168,16 +168,16 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x, @center.y,
-          @width, @height, 0, 360, mode)
+        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+          @width.to_i, @height.to_i, 0, 360, mode.to_i)
         nil
       end
     end
 
     class FilledEllipse < Ellipse
       def draw(image, mode)
-        GD2FFI.send(:gdImageFilledEllipse, image.image_ptr, @center.x, @center.y,
-          @width, @height, mode)
+        GD2FFI.send(:gdImageFilledEllipse, image.image_ptr, @center.x.to_i, @center.y.to_i,
+          @width.to_i, @height.to_i, mode.to_i)
       end
     end
 
@@ -240,7 +240,7 @@ module GD2
     end
 
     def thickness=(thickness)
-      GD2FFI.send(:gdImageSetThickness, @image.image_ptr, @thickness = thickness)
+      GD2FFI.send(:gdImageSetThickness, @image.image_ptr, @thickness = thickness.to_i)
     end
 
     def style=(ary)
@@ -331,14 +331,14 @@ module GD2
     end
 
     def fill
-      GD2FFI.send(:gdImageFill, @image.image_ptr, @point.x, @point.y, fill_pixel)
+      GD2FFI.send(:gdImageFill, @image.image_ptr, @point.x.to_i, @point.y.to_i, fill_pixel.to_i)
       self
     end
 
     def fill_to(border)
       # An apparent bug in gd prevents us from using fill_pixel
-      GD2FFI.send(:gdImageFillToBorder, @image.image_ptr, @point.x, @point.y,
-        @image.color2pixel(border), pixel)
+      GD2FFI.send(:gdImageFillToBorder, @image.image_ptr, @point.x.to_i, @point.y.to_i,
+        @image.color2pixel(border), pixel.to_i)
       self
     end
 
@@ -405,9 +405,9 @@ module GD2
       elsif anti_aliasing?
         if @dont_blend
           GD2FFI.send(:gdImageSetAntiAliasedDontBlend, @image.image_ptr,
-            pixel, @dont_blend)
+            pixel.to_i, @dont_blend.to_i)
         else
-          GD2FFI.send(:gdImageSetAntiAliased, @image.image_ptr, pixel)
+          GD2FFI.send(:gdImageSetAntiAliased, @image.image_ptr, pixel.to_i)
         end
         ANTI_ALIASED
       else
