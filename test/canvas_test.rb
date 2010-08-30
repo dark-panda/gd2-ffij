@@ -4,7 +4,7 @@ require 'tmpdir'
 require 'rubygems'
 require 'gd2-ffij'
 
-require 'test/test_helper'
+require './test/test_helper'
 
 class CanvasTest < Test::Unit::TestCase
 	include TestHelper
