@@ -281,22 +281,30 @@ module GD2
       end
     end
 
-    def translate(tx, ty, &block)
-      affine_transform(1, 0, 0, 1, tx, ty, &block)
+    def translate(tx, ty)
+      affine_transform(1, 0, 0, 1, tx, ty) { |*block_args|
+        yield(*block_args)
+    }
     end
 
-    def scale(sx, sy = sx, &block)
-      affine_transform(sx, 0, 0, sy, 0, 0, &block)
+    def scale(sx, sy = sx)
+      affine_transform(sx, 0, 0, sy, 0, 0) { |*block_args|
+        yield(*block_args)
+      }
     end
 
-    def rotate(angle, &block)
+    def rotate(angle)
       cos = Math.cos(angle)
       sin = Math.sin(angle)
-      affine_transform(cos, sin, -sin, cos, 0, 0, &block)
+      affine_transform(cos, sin, -sin, cos, 0, 0) { |*block_args|
+        yield(*block_args)
+      }
     end
 
-    def cartesian(&block)
-      affine_transform(1, 0, 0, -1, 0, @image.height - 1, &block)
+    def cartesian
+      affine_transform(1, 0, 0, -1, 0, @image.height - 1) { |*block_args|
+        yield(*block_args)
+      }
     end
 
     def point(x, y)
