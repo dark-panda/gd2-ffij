@@ -10,7 +10,6 @@ begin
 	require 'jeweler'
 	Jeweler::Tasks.new do |gem|
 		gem.name        = "gd2-ffij"
-		gem.version     = "0.0.3"
 		gem.summary     = "gd2-ffij is a refactoring of the Ruby/GD2 library implemented with FFI"
 		gem.description = "gd2-ffij is a refactoring of the Ruby/GD2 library implemented with FFI"
 		gem.email       = "dark.panda@gmail.com"
