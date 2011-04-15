@@ -28,19 +28,29 @@ module GD2
 
   module GD2FFI
     def self.gd_library_name
-      if ENV['GD2_LIBRARY_PATH']
-        ENV['GD2_LIBRARY_PATH']
+      return @gd_library_name if @gd_library_name
+
+      @gd_library_name = if Config::CONFIG['host_os'] == 'cygwin'
+        'cyggd-2.dll'
       else
-        lib = case Config::CONFIG['arch']
-        when /darwin/
-          [ '/usr/lib', '/usr/local/lib', '/opt/local/lib' ].detect { |path|
-            File.exists?("#{path}/libgd.2.dylib")
-          }.to_s + '/libgd.2.dylib'
-        when /mswin32/, /cygwin/
-          'bgd.dll'
+        paths = if ENV['GD2_LIBRARY_PATH']
+          ENV['GD2_LIBRARY_PATH']
+        else
+          [ '/usr/local/{lib64,lib}', '/opt/local/{lib64,lib}', '/usr/{lib64,lib}' ]
+        end
+
+        lib = if [
+          Config::CONFIG['arch'],
+          Config::CONFIG['host_os']
+        ].detect { |c| c =~ /darwin/ }
+          'libgd.2.dylib'
         else
           'libgd.so.2'
         end
+
+        Dir.glob(paths.collect { |path|
+          "#{path}/#{lib}"
+        }).first
       end
     end
 
