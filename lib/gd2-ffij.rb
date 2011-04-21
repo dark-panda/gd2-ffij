@@ -24,7 +24,7 @@ require 'ffi'
 require 'rbconfig'
 
 module GD2
-  VERSION = File.read(File.join(GEOS_BASE, %w{ .. VERSION })) rescue nil
+  VERSION = File.read(File.join(File.dirname(__FILE__), %w{ .. VERSION })).strip
 
   module GD2FFI
     def self.gd_library_name
