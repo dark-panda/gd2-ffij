@@ -1,10 +1,13 @@
 # -*- ruby -*-
 
 require 'rubygems'
-require 'rake/gempackagetask'
+require 'rubygems/package_task'
 require 'rake/testtask'
+require 'rake/rdoctask'
 
 $:.push 'lib'
+
+version = File.read('VERSION') rescue ''
 
 begin
   require 'jeweler'
@@ -15,7 +18,6 @@ begin
     gem.email       = "dark.panda@gmail.com"
     gem.homepage    = "http://github.com/dark-panda/gd2-ffij"
     gem.authors =    [ "J Smith" ]
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -24,8 +26,15 @@ end
 
 desc 'Test GD2 interface'
 Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
   t.pattern = 'test/**/*_test.rb'
-  t.verbose = false
+  t.verbose = !!ENV['VERBOSE_TESTS']
 end
 
+desc 'Build docs'
+Rake::RDocTask.new do |t|
+  require 'rdoc'
+  t.title = "gd2-ffij #{version}"
+  t.main = 'README'
+  t.rdoc_dir = 'doc'
+  t.rdoc_files.include('README', 'COPYING', 'COPYRIGHT', 'lib/**/*.rb')
+end
