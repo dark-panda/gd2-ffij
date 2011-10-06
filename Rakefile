@@ -5,6 +5,14 @@ require 'rubygems/package_task'
 require 'rake/testtask'
 require 'rake/rdoctask'
 
+if RUBY_VERSION >= '1.9'
+  begin
+    gem 'psych'
+  rescue Exception => e
+    # it's okay, fall back on the bundled psych
+  end
+end
+
 $:.push 'lib'
 
 version = File.read('VERSION') rescue ''
