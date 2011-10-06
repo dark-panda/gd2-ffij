@@ -34,7 +34,7 @@ end
 
 desc 'Test GD2 interface'
 Rake::TestTask.new(:test) do |t|
-  t.pattern = 'test/**/*_test.rb'
+  t.test_files = FileList['test/**/*_test.rb']
   t.verbose = !!ENV['VERBOSE_TESTS']
 end
 
