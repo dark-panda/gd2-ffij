@@ -30,7 +30,7 @@ module GD2
     def self.gd_library_name
       return @gd_library_name if @gd_library_name
 
-      @gd_library_name = if Config::CONFIG['host_os'] == 'cygwin'
+      @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
         'cyggd-2.dll'
       else
         paths = if ENV['GD2_LIBRARY_PATH']
@@ -40,8 +40,8 @@ module GD2
         end
 
         lib = if [
-          Config::CONFIG['arch'],
-          Config::CONFIG['host_os']
+          RbConfig::CONFIG['arch'],
+          RbConfig::CONFIG['host_os']
         ].detect { |c| c =~ /darwin/ }
           'libgd.2.dylib'
         else
