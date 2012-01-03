@@ -2,7 +2,7 @@
 Ruby/GD2 - Ruby binding for Thomas Boutell's gd 2.x graphics library
 Copyright (C) 2005-2006 Robert Leslie <rob@mars.org>
 
-FFI modifications copyright (C) 2010 J Smith <dark.panda@gmail.com>
+FFI modifications copyright (C) 2010-2012 J Smith <dark.panda@gmail.com>
 
 Robert's Notes:
 
