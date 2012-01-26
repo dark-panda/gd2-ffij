@@ -1,6 +1,9 @@
 # -*- ruby -*-
 
 require 'rubygems'
+
+gem 'rdoc', '~> 3.12'
+
 require 'rubygems/package_task'
 require 'rake/testtask'
 require 'rdoc/task'
@@ -41,7 +44,6 @@ end
 
 desc 'Build docs'
 Rake::RDocTask.new do |t|
-  require 'rdoc'
   t.title = "gd2-ffij #{version}"
   t.main = 'README'
   t.rdoc_dir = 'doc'
