@@ -103,7 +103,7 @@ module GD2
     # a color from the palette that is closest to it.
     def resolve(color)
       raise TypeError unless color.kind_of? Color
-      c = GD2FFI.send(:gdImageColorResolveAlpha, @image.image_ptr,
+      c = ::GD2::GD2FFI.send(:gdImageColorResolveAlpha, @image.image_ptr,
         color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
@@ -112,7 +112,7 @@ module GD2
     # if the color is not presently in the palette.
     def exact(color)
       raise TypeError unless color.kind_of? Color
-      c = GD2FFI.send(:gdImageColorExactAlpha, @image.image_ptr,
+      c = ::GD2::GD2FFI.send(:gdImageColorExactAlpha, @image.image_ptr,
         color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
@@ -128,7 +128,7 @@ module GD2
     # according to Euclidian distance.
     def closest(color)
       raise TypeError unless color.kind_of? Color
-      c = GD2FFI.send(:gdImageColorClosestAlpha, @image.image_ptr,
+      c = ::GD2::GD2FFI.send(:gdImageColorClosestAlpha, @image.image_ptr,
         color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
@@ -137,7 +137,7 @@ module GD2
     # according to hue, whiteness, and blackness.
     def closest_hwb(color)
       raise TypeError unless color.kind_of? Color
-      c = GD2FFI.send(:gdImageColorClosestHWB, @image.image_ptr,
+      c = ::GD2::GD2FFI.send(:gdImageColorClosestHWB, @image.image_ptr,
         color.red.to_i, color.green.to_i, color.blue.to_i)
       c == -1 ? nil : get_color(c)
     end
@@ -147,7 +147,7 @@ module GD2
     # raises an error for Image::IndexedColor palettes if the palette is full.
     def allocate(color)
       raise TypeError unless color.kind_of? Color
-      c = GD2FFI.send(:gdImageColorAllocateAlpha, @image.image_ptr,
+      c = ::GD2::GD2FFI.send(:gdImageColorAllocateAlpha, @image.image_ptr,
         color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? raise(Palette::PaletteFullError, 'Palette is full') :
         get_color(c)
@@ -164,7 +164,7 @@ module GD2
     def deallocate(color)
       color = exact(color) unless color.index
       return nil if color.nil? || color.index.nil?
-      GD2FFI.send(:gdImageColorDeallocate, @image.image_ptr, color.index.to_i)
+      ::GD2::GD2FFI.send(:gdImageColorDeallocate, @image.image_ptr, color.index.to_i)
       nil
     end
 
