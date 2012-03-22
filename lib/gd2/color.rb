@@ -215,7 +215,7 @@ module GD2
     # Alpha blend this color with the given color. If this color is associated
     # with a palette entry, this also modifies the palette.
     def alpha_blend!(other)
-      self.rgba = GD2FFI.send(:gdAlphaBlend, rgba.to_i, other.rgba.to_i)
+      self.rgba = ::GD2::GD2FFI.send(:gdAlphaBlend, rgba.to_i, other.rgba.to_i)
       self
     end
     alias << alpha_blend!

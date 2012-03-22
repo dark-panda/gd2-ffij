@@ -58,7 +58,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageLine, image.image_ptr,
+        ::GD2::GD2FFI.send(:gdImageLine, image.image_ptr,
           @p1.x.to_i, @p1.y.to_i, @p2.x.to_i, @p2.y.to_i, mode.to_i)
         nil
       end
@@ -70,7 +70,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(draw_sym, image.image_ptr, @p1.x.to_i, @p1.y.to_i, @p2.x.to_i, @p2.y.to_i, mode.to_i)
+        ::GD2::GD2FFI.send(draw_sym, image.image_ptr, @p1.x.to_i, @p1.y.to_i, @p2.x.to_i, @p2.y.to_i, mode.to_i)
         nil
       end
 
@@ -91,7 +91,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(draw_sym, image.image_ptr, @points.map { |point|
+        ::GD2::GD2FFI.send(draw_sym, image.image_ptr, @points.map { |point|
           point.coordinates.pack('i_i_')
         }.join(''), @points.length, mode.to_i)
         nil
@@ -122,7 +122,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+        ::GD2::GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
           @width.to_i, @height.to_i,
           @range.begin.to_degrees.round.to_i, @range.end.to_degrees.round.to_i, mode.to_i)
         nil
@@ -144,7 +144,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageFilledArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+        ::GD2::GD2FFI.send(:gdImageFilledArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
           @width.to_i, @height.to_i,
           @range.begin.to_degrees.round.to_i, @range.end.to_degrees.round.to_i,
           mode.to_i, style.to_i)
@@ -168,7 +168,7 @@ module GD2
       end
 
       def draw(image, mode)
-        GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
+        ::GD2::GD2FFI.send(:gdImageArc, image.image_ptr, @center.x.to_i, @center.y.to_i,
           @width.to_i, @height.to_i, 0, 360, mode.to_i)
         nil
       end
@@ -176,7 +176,7 @@ module GD2
 
     class FilledEllipse < Ellipse
       def draw(image, mode)
-        GD2FFI.send(:gdImageFilledEllipse, image.image_ptr, @center.x.to_i, @center.y.to_i,
+        ::GD2::GD2FFI.send(:gdImageFilledEllipse, image.image_ptr, @center.x.to_i, @center.y.to_i,
           @width.to_i, @height.to_i, mode.to_i)
       end
     end
@@ -240,12 +240,12 @@ module GD2
     end
 
     def thickness=(thickness)
-      GD2FFI.send(:gdImageSetThickness, @image.image_ptr, @thickness = thickness.to_i)
+      ::GD2::GD2FFI.send(:gdImageSetThickness, @image.image_ptr, @thickness = thickness.to_i)
     end
 
     def style=(ary)
       if @style = ary
-        GD2FFI.send(:gdImageSetStyle, @image.image_ptr,
+        ::GD2::GD2FFI.send(:gdImageSetStyle, @image.image_ptr,
           ary.map { |c|
             !c ? TRANSPARENT : true == c ? -1 : @image.color2pixel(c)
           }, ary.length)
@@ -254,13 +254,13 @@ module GD2
 
     def brush=(image)
       if @brush = image
-        GD2FFI.send(:gdImageSetBrush, @image.image_ptr, image.image_ptr)
+        ::GD2::GD2FFI.send(:gdImageSetBrush, @image.image_ptr, image.image_ptr)
       end
     end
 
     def tile=(image)
       if @tile = image
-        GD2FFI.send(:gdImageSetTile, @image.image_ptr, image.image_ptr)
+        ::GD2::GD2FFI.send(:gdImageSetTile, @image.image_ptr, image.image_ptr)
       end
     end
 
@@ -339,13 +339,13 @@ module GD2
     end
 
     def fill
-      GD2FFI.send(:gdImageFill, @image.image_ptr, @point.x.to_i, @point.y.to_i, fill_pixel.to_i)
+      ::GD2::GD2FFI.send(:gdImageFill, @image.image_ptr, @point.x.to_i, @point.y.to_i, fill_pixel.to_i)
       self
     end
 
     def fill_to(border)
       # An apparent bug in gd prevents us from using fill_pixel
-      GD2FFI.send(:gdImageFillToBorder, @image.image_ptr, @point.x.to_i, @point.y.to_i,
+      ::GD2::GD2FFI.send(:gdImageFillToBorder, @image.image_ptr, @point.x.to_i, @point.y.to_i,
         @image.color2pixel(border), pixel.to_i)
       self
     end
@@ -412,10 +412,10 @@ module GD2
         BRUSHED
       elsif anti_aliasing?
         if @dont_blend
-          GD2FFI.send(:gdImageSetAntiAliasedDontBlend, @image.image_ptr,
+          ::GD2::GD2FFI.send(:gdImageSetAntiAliasedDontBlend, @image.image_ptr,
             pixel.to_i, @dont_blend.to_i)
         else
-          GD2FFI.send(:gdImageSetAntiAliased, @image.image_ptr, pixel.to_i)
+          ::GD2::GD2FFI.send(:gdImageSetAntiAliased, @image.image_ptr, pixel.to_i)
         end
         ANTI_ALIASED
       else
