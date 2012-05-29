@@ -34,9 +34,9 @@ module GD2
         'cyggd-2.dll'
       else
         paths = if ENV['GD2_LIBRARY_PATH']
-          ENV['GD2_LIBRARY_PATH']
+          [ ENV['GD2_LIBRARY_PATH'] ]
         else
-          [ '/usr/local/{lib64,lib}', '/opt/local/{lib64,lib}', '/usr/{lib64,lib}' ]
+          [ '/usr/local/{lib64,lib}', '/opt/local/{lib64,lib}', '/usr/{lib64,lib}', '/usr/lib/x86_64-linux-gnu' ]
         end
 
         lib = if [
