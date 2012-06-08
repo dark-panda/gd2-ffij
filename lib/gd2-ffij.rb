@@ -22,10 +22,9 @@
 
 require 'ffi'
 require 'rbconfig'
+require 'gd2/version'
 
 module GD2
-  VERSION = File.read(File.join(File.dirname(__FILE__), %w{ .. VERSION })).strip
-
   module GD2FFI
     def self.gd_library_name
       return @gd_library_name if @gd_library_name

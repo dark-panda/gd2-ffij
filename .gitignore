@@ -4,3 +4,11 @@
 *tmp*
 pkg/
 doc/
+*.orig
+*.patch
+*.gem
+*.rbc
+.bundle
+.config
+.yardoc
+Gemfile.lock
