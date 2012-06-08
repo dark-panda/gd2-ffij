@@ -1,8 +1,3 @@
-require 'test/unit'
-require 'tmpdir'
-
-require 'rubygems'
-require 'gd2-ffij'
 
 require './test/test_helper'
 

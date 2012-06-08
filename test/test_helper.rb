@@ -1,4 +1,12 @@
 
+require 'test/unit'
+require 'tmpdir'
+
+require 'rubygems'
+require 'gd2-ffij'
+
+puts "GD2 version: #{GD2::VERSION}"
+
 module TestHelper
 	PATH_TO_IMAGES = File.join(File.dirname(__FILE__), 'images')
 	PATH_TO_FONT   = File.join(File.dirname(__FILE__), '..', 'vendor', 'fonts', 'ttf', 'DejaVuSans.ttf')
