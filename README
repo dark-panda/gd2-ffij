@@ -32,3 +32,9 @@ original GD2 library, although without a complete test suite and
 the time and resources to do complete testing, it is difficult to
 know for sure. Reports on successful test runs are welcomed.
 
+Bug Reporting:
+
+Reports are welcome and should be posted to the project's GitHub issue
+tracker at
+
+  http://github.com/dark-panda/gd2-ffij
