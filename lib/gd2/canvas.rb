@@ -424,7 +424,7 @@ module GD2
     end
 
     def fill_pixel
-      @tile ? TILED : pixel
+      defined?(@tile) ? TILED : pixel
     end
   end
 end

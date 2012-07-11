@@ -5,25 +5,25 @@ class ImageTest < Test::Unit::TestCase
 	include TestHelper
 
 	def test_image_new_and_release
-		img = GD2::Image.new(50, 50)
+		GD2::Image.new(50, 50)
 	end
 
 	def test_image_true_color_new_and_release
-		img = GD2::Image::TrueColor.new(50, 50)
+		GD2::Image::TrueColor.new(50, 50)
 	end
 
 	def test_image_indexed_color_new_and_release
-		img = GD2::Image::IndexedColor.new(50, 50)
+		GD2::Image::IndexedColor.new(50, 50)
 	end
 
 	[ :png, :gif, :jpg, :wbmp, :gd2 ].each do |ext|
 		self.class_eval(<<-EOF)
 			def test_load_#{ext}_from_file
-				img = GD2::Image.load(File.open(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
+				GD2::Image.load(File.open(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
 			end
 
 			def test_load_#{ext}_from_string
-				img = GD2::Image.load(File.read(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
+				GD2::Image.load(File.read(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
 			end
 		EOF
 	end
@@ -32,7 +32,7 @@ class ImageTest < Test::Unit::TestCase
 	[ :png, :gif, :jpg, :gd, :gd2 ].each do |ext|
 		self.class_eval(<<-EOF)
 			def test_import_#{ext}_from_file
-				img = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+				GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
 			end
 
 			def test_export_#{ext}
@@ -135,7 +135,7 @@ class ImageTest < Test::Unit::TestCase
 		assert(imgA == imgB)
 	end
 
-	def test_resampled
+	def test_to_indexed_color
 		imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).to_indexed_color
 		imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_indexed.gd2'))
 

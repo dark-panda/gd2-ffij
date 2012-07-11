@@ -239,7 +239,7 @@ module GD2
       end
 
       @palette = self.class.palette_class.new(self) unless
-        @palette && @palette.image == self
+        defined?(@palette) && @palette.image == self
       self
     end
 
@@ -320,11 +320,10 @@ module GD2
     # Iterate over each row of pixels in the image, returning an array of
     # pixel values.
     def each
-      ptr = image_ptr
       (0...height).each do |y|
-        row = (0...width).inject(Array.new(width)) do |row, x|
-          row[x] = get_pixel(x, y)
-          row
+        row = (0...width).inject(Array.new(width)) do |r, x|
+          r[x] = get_pixel(x, y)
+          r
         end
         yield row
       end

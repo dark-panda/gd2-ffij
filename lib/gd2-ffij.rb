@@ -27,7 +27,7 @@ require 'gd2/version'
 module GD2
   module GD2FFI
     def self.gd_library_name
-      return @gd_library_name if @gd_library_name
+      return @gd_library_name if defined?(@gd_library_name)
 
       @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
         'cyggd-2.dll'
