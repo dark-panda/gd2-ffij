@@ -1,4 +1,5 @@
 *.kpf
+*.komodoproject
 *~
 .DS_Store
 *tmp*
