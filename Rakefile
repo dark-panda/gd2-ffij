@@ -31,7 +31,7 @@ end
 desc 'Build docs'
 Rake::RDocTask.new do |t|
   t.title = "gd2-ffij #{version}"
-  t.main = 'README'
+  t.main = 'README.rdoc'
   t.rdoc_dir = 'doc'
-  t.rdoc_files.include('README', 'COPYING', 'COPYRIGHT', 'lib/**/*.rb')
+  t.rdoc_files.include('README.rdoc', 'COPYING', 'COPYRIGHT', 'lib/**/*.rb')
 end

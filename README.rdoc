@@ -1,0 +1,47 @@
+
+= gd2-ffij - Ruby FFI Bindings for Thomas Boutell's gd 2.x Graphics Library
+
+Original dl-based code copyright (C) 2005-2006 Robert Leslie <rob@mars.org>
+
+FFI modifications copyright (C) 2010-2012 J Smith <dark.panda@gmail.com>
+
+The gd2-ffij project page can be found at
+http://github.com/dark-panda/gd2-ffij .
+
+== Why FFI
+
+DL just doesn't want to work correctly on my x86_64 linux boxes and on
+OSX, so here's a refactoring using FFI.
+
+These modifications were partly inspired by Patrick Stenmark's
+work, which can be found at http://github.com/spatrik/gd2-ffi/,
+although the goal of these modifications are a complete GD2 Ruby
+library using FFI. I've also included the beginning of a test suite,
+although coverage isn't quite complete yet.
+
+This GD2 library should "just work" as a replacement for Robert's
+original GD2 library, although without a complete test suite and
+the time and resources to do complete testing, it is difficult to
+know for sure. Reports on successful test runs are welcomed.
+
+== Robert's Original Notes
+
+"I wrote this Ruby library because I wasn't satisfied with the existing
+Ruby/GD extension library. Among other things, it had no support for
+creating images from PNG or JPEG data already in memory.
+
+Ruby/GD2 is 100% Ruby and uses dl to link with the gd shared library. Most
+of the gd API is supported in some way, however the interface is quite
+different so that we can do things The Ruby Way as much as possible.
+
+Most of the documentation for this library is now in RDoc form."
+
+== Contributing
+
+Patches, bug reports, pull requests, and all other good stuff can be performed
+via the project GitHub page at http://github.com/dark-panda/gd2-ffij .
+
+== License
+
+See the COPYRIGHT file for details, but the gist of it is that this gem is
+covered under the terms of the GPL version 2 or above.
