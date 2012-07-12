@@ -110,21 +110,16 @@ module GD2
     FTEX_FONTCONFIG           =  64
     FTEX_RETURNFONTPATHNAME   = 128
 
-    @@fontcount = 0
-    @@fontconfig = false
+    def self.register(font) #:nodoc:
+      Thread.current[:fontcount] ||= 0
+      Thread.current[:fontcount] += 1
 
-    def self.register(font)   #:nodoc:
-      Thread.exclusive do
-        count = @@fontcount
-        @@fontcount += 1
-
-        if count.zero?
-          raise FreeTypeError, 'FreeType library failed to initialize' unless
-            ::GD2::GD2FFI.send(:gdFontCacheSetup).zero?
-        end
-
-        ObjectSpace.define_finalizer(font, font_finalizer)
+      if Thread.current[:fontcount].zero?
+        raise FreeTypeError, 'FreeType library failed to initialize' unless
+          ::GD2::GD2FFI.send(:gdFontCacheSetup).zero?
       end
+
+      ObjectSpace.define_finalizer(font, font_finalizer)
     end
 
     def self.font_finalizer
@@ -132,16 +127,23 @@ module GD2
     end
 
     def self.unregister
-      Thread.exclusive do
-        @@fontcount -= 1
-        ::GD2::GD2FFI.send(:gdFontCacheShutdown) if @@fontcount.zero?
+      if Thread.current[:fontcount]
+        Thread.current[:fontcount] -= 1
+      else
+        Thread.current[:fontcount] = 0
       end
+
+      ::GD2::GD2FFI.send(:gdFontCacheShutdown) if Thread.current[:fontcount].zero?
     end
 
     private_class_method :font_finalizer, :unregister
 
-    def self.fontconfig   #:nodoc:
-      @@fontconfig
+    def self.fontconfig #:nodoc:
+      if Thread.current[:fontconfig].nil?
+        Thread.current[:fontconfig] = false
+      end
+
+      Thread.current[:fontconfig]
     end
 
     # Return a boolean indicating whether fontconfig support has been enabled.
@@ -156,7 +158,7 @@ module GD2
     def self.fontconfig=(want)
       avail = !::GD2::GD2FFI.send(:gdFTUseFontConfig, want ? 1 : 0).zero?
       raise FontconfigError, 'Fontconfig not available' if want && !avail
-      @@fontconfig = want
+      Thread.current[:fontconfig] = !!want
     end
 
     class << self
