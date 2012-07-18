@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.summary = s.description
   s.email = "dark.panda@gmail.com"
   s.extra_rdoc_files = [
-    "README"
+    "README.rdoc"
   ]
   s.files = `git ls-files`.split($\)
   s.executables = s.files.grep(%r{^bin/}).map { |f| File.basename(f) }
