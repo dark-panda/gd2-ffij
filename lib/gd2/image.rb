@@ -89,14 +89,14 @@ module GD2
     # automatically (JPEG, PNG, GIF, WBMP, or GD2). The resulting image will be
     # either of class Image::TrueColor or Image::IndexedColor.
     def self.load(src)
-      src = src.force_encoding("BINARY") if src.respond_to? :force_encoding
+      src = src.force_encoding("ASCII-8BIT") if src.respond_to? :force_encoding
       case src
       when File
         pos = src.pos
         magic = src.read(4)
         src.pos = pos
         data = src.read
-        data = data.force_encoding("BINARY") if data.respond_to? :force_encoding
+        data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
         args = [ data.length, data ]
       when String
         magic = src
@@ -201,7 +201,7 @@ module GD2
           'Format (or file extension) is not recognized' unless create_sym
 
         file = File.read(filename)
-        file = file.force_encoding("BINARY") if file.respond_to? :force_encoding
+        file = file.force_encoding("ASCII-8BIT") if file.respond_to? :force_encoding
         file_ptr = FFI::MemoryPointer.new(file.size, 1, false)
         file_ptr.put_bytes(0, file)
 
