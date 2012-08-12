@@ -99,7 +99,7 @@ module GD2
         data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
         args = [ data.length, data ]
       when String
-        magic = src
+        magic = src.slice(0, 4)
         args = [ src.length, src ]
       else
         raise TypeError, 'Unexpected argument type'
@@ -126,24 +126,17 @@ module GD2
       block_given? ? yield(image) : image
     end
 
-    def self.data_type(str)
-      ct = 0
-      mgc = ""
-      str.each_byte do |byte|
-        break if ct == 4
-        mgc << byte.to_s
-        ct += 1
-      end
-      case mgc
-      when "255216255224"
+    def self.data_type(magic)
+      case magic
+      when /^\xff\xd8/
         :jpeg
-      when "137807871"
+      when /^\x89PNG/
         :png
-      when "71737056"
+      when /^GIF8/
         :gif
-      when "001300"
+      when /^\x00/
         :wbmp
-      when "103100500"
+      when /^gd2/
         :gd2
       end
     end
