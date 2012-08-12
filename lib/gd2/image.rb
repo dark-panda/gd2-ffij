@@ -408,9 +408,7 @@ module GD2
     def with_clipping(x1, y1, x2, y2)   #:yields: image
       clip = clipping
       begin
-        p clipping
         ::GD2::GD2FFI.send(:gdImageSetClip, image_ptr, x1.to_i, y1.to_i, x2.to_i, y2.to_i)
-        p clipping
         yield self
         self
       ensure
