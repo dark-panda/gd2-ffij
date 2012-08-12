@@ -1,3 +1,4 @@
+# encoding: ASCII-8BIT
 #
 # Ruby/GD2 -- Ruby binding for gd 2 graphics library
 #
