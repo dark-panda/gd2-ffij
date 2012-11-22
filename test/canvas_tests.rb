@@ -2,7 +2,7 @@
 
 require './test/test_helper'
 
-class CanvasTest < Test::Unit::TestCase
+class CanvasTest < MiniTest::Unit::TestCase
   include TestHelper
 
   def test_line

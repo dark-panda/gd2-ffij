@@ -2,7 +2,7 @@
 
 require './test/test_helper'
 
-class ImageTest < Test::Unit::TestCase
+class ImageTest < MiniTest::Unit::TestCase
   include TestHelper
 
   def test_image_new_and_release

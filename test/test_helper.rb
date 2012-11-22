@@ -1,10 +1,11 @@
 # encoding: ASCII-8BIT
 
-require 'test/unit'
 require 'tmpdir'
 
 require 'rubygems'
 require 'gd2-ffij'
+require 'minitest/autorun'
+require 'minitest/reporters'
 
 puts "GD2 version: #{GD2::VERSION}"
 
@@ -20,3 +21,6 @@ module TestHelper
     GD2::Image.load(File.read(File.join(PATH_TO_IMAGES, file_name)))
   end
 end
+
+MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)
+
