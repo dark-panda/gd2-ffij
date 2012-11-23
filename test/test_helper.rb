@@ -5,7 +5,10 @@ require 'tmpdir'
 require 'rubygems'
 require 'gd2-ffij'
 require 'minitest/autorun'
-require 'minitest/reporters'
+
+if RUBY_VERSION >= '1.9'
+  require 'minitest/reporters'
+end
 
 puts "GD2 version: #{GD2::VERSION}"
 
@@ -22,5 +25,7 @@ module TestHelper
   end
 end
 
-MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)
+if RUBY_VERSION >= '1.9'
+  MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)
+end
 
