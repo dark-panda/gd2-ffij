@@ -55,7 +55,12 @@ module GD2
     end
 
     extend FFI::Library
-    ffi_lib(*gd_library_name)
+
+    begin
+      ffi_lib(*gd_library_name)
+    rescue LoadError, NoMethodError
+      raise LoadError.new("Couldn't load the gd2 library.")
+    end
 
     {
       :gdImageCreate                      => [ :pointer,  :int, :int ],
