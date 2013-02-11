@@ -19,6 +19,8 @@ if RUBY_VERSION >= '1.9'
   require 'minitest/reporters'
 end
 
+puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL} - #{RbConfig::CONFIG['RUBY_INSTALL_NAME']}"
+puts "ffi version #{Gem.loaded_specs['ffi'].version}" if Gem.loaded_specs['ffi']
 puts "GD2 version: #{GD2::VERSION}"
 
 module TestHelper
