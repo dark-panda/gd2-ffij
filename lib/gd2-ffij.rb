@@ -43,9 +43,9 @@ module GD2
           RbConfig::CONFIG['arch'],
           RbConfig::CONFIG['host_os']
         ].detect { |c| c =~ /darwin/ }
-          'libgd.2.dylib'
+          'libgd.dylib'
         else
-          'libgd.so.2'
+          'libgd.so'
         end
 
         Dir.glob(paths.collect { |path|
