@@ -1,6 +1,6 @@
 # encoding: ASCII-8BIT
 
 module GD2
-  VERSION = "0.0.7"
+  VERSION = "0.0.8.dev"
 end
 
