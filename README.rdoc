@@ -3,7 +3,7 @@
 
 Original dl-based code copyright (C) 2005-2006 Robert Leslie <rob@mars.org>
 
-FFI modifications copyright (C) 2010-2012 J Smith <dark.panda@gmail.com>
+FFI modifications copyright (C) 2010-2013 J Smith <dark.panda@gmail.com>
 
 The gd2-ffij project page can be found at
 http://github.com/dark-panda/gd2-ffij .
