@@ -71,7 +71,7 @@ module GD2::FFIStruct
     )
 
     def self.release(ptr)
-      ::GD2::GD2FFI.gdImageDestroy(ptr)
+      ::GD2::GD2FFI.gdImageDestroy(ptr) unless ptr.null?
     end
   end
 end
