@@ -95,7 +95,7 @@ module GD2
         pos = src.pos
         magic = src.read(4)
         src.pos = pos
-        data = src.read
+        data = File.new(src.path, 'rb').read[pos..-1] # windows read fix
         data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
         args = [ data.length, data ]
       when String
@@ -193,14 +193,14 @@ module GD2
         raise UnrecognizedImageTypeError,
           'Format (or file extension) is not recognized' unless create_sym
 
-        file = File.read(filename)
+        file = File.new(filename, 'rb').read
         file = file.force_encoding("ASCII-8BIT") if file.respond_to? :force_encoding
         file_ptr = FFI::MemoryPointer.new(file.size, 1, false)
         file_ptr.put_bytes(0, file)
 
         ::GD2::GD2FFI.send(create_sym, file.size, file_ptr)
       end
-      raise LibraryError unless ptr
+      raise LibraryError if ptr.null?
 
       ptr = FFIStruct::ImagePtr.new(ptr)
 

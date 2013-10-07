@@ -32,6 +32,8 @@ module GD2
 
       @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
         'cyggd-2.dll'
+      elsif RbConfig::CONFIG['host_os'] =~ /mingw/
+        'bgd.dll'
       else
         paths = if ENV['GD2_LIBRARY_PATH']
           [ ENV['GD2_LIBRARY_PATH'] ]
@@ -155,7 +157,15 @@ module GD2
       :gdFree                             => [ :void,     :pointer ]
     }.each do |fun, ary|
       ret = ary.shift
-      attach_function(fun, ary, ret)
+      funa = fun
+      if RbConfig::CONFIG['host_os'] =~ /mingw/
+        i = ary.length
+        ary.each { |ar|
+          i += 1 if ar == :double
+        }
+        funa = "#{funa}@#{i * 4}"
+      end
+      attach_function(fun, funa, ary, ret)      
     end
   end
 
