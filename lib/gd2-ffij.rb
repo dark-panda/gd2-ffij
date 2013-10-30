@@ -32,6 +32,9 @@ module GD2
 
       @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
         'cyggd-2.dll'
+      elsif RbConfig::CONFIG['host_os'] =~ /mingw/
+        ffi_convention(:stdcall)
+        'bgd.dll'
       else
         paths = if ENV['GD2_LIBRARY_PATH']
           [ ENV['GD2_LIBRARY_PATH'] ]
