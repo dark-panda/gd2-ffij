@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.description = "gd2-ffij is a refactoring of the Ruby/GD2 library implemented with FFI"
   s.summary = s.description
   s.email = "dark.panda@gmail.com"
+  s.license = "GPL-2"
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
