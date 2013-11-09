@@ -1,9 +1,7 @@
 
+= THIS BRANCH CONTAINS A PROPOSAL FOR A LICENSE CHANGE AND IS NOT MEANT FOR RELEASE
+
 = gd2-ffij - Ruby FFI Bindings for Thomas Boutell's gd 2.x Graphics Library
-
-Original dl-based code copyright (C) 2005-2006 Robert Leslie <rob@mars.org>
-
-FFI modifications copyright (C) 2010-2013 J Smith <dark.panda@gmail.com>
 
 The gd2-ffij project page can be found at
 http://github.com/dark-panda/gd2-ffij .
@@ -43,5 +41,4 @@ via the project GitHub page at http://github.com/dark-panda/gd2-ffij .
 
 == License
 
-See the COPYRIGHT file for details, but the gist of it is that this gem is
-covered under the terms of the GPL version 2 or above.
+See the COPYRIGHT file for details.
