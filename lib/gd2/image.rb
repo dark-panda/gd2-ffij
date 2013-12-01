@@ -76,7 +76,13 @@ module GD2
         pos = src.pos
         magic = src.read(4)
         src.pos = pos
-        data = src.read
+
+        data = if FFI::Platform.windows?
+          File.open(src.path, 'rb').read[pos..-1]
+        else
+          data = src.read
+        end
+
         data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
         args = [ data.length, data ]
       when String
