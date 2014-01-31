@@ -33,7 +33,7 @@ module GD2
         end
 
         Dir.glob(paths.collect { |path|
-          "#{path}/#{lib}"
+          "#{path}/#{lib}{.*,}"
         }).first
       end
     end
