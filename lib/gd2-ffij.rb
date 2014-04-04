@@ -40,13 +40,7 @@ module GD2
 
     extend FFI::Library
 
-    begin
-      ffi_lib(*gd_library_name)
-    rescue LoadError, NoMethodError
-      raise LoadError.new("Couldn't load the gd2 library.")
-    end
-
-    {
+    FFI_LAYOUT = {
       :gdImageCreate                      => [ :pointer,  :int, :int ],
       :gdImageCreateTrueColor             => [ :pointer,  :int, :int ],
       :gdImageCreatePaletteFromTrueColor  => [ :pointer,  :pointer, :int, :int ],
@@ -137,9 +131,23 @@ module GD2
       :gdFontCacheShutdown                => [ :void ],
       :gdFTUseFontConfig                  => [ :int,      :int ],
       :gdFree                             => [ :void,     :pointer ]
-    }.each do |fun, ary|
-      ret = ary.shift
-      attach_function(fun, ary, ret)
+    }
+
+    begin
+      ffi_lib(gd_library_name)
+
+      FFI_LAYOUT.each do |fun, ary|
+        ret = ary.shift
+        begin
+          self.class_eval do
+            attach_function(fun, ary, ret)
+          end
+        rescue FFI::NotFoundError
+          # that's okay
+        end
+      end
+    rescue LoadError, NoMethodError
+      raise LoadError.new("Couldn't load the gd2 library.")
     end
   end
 
