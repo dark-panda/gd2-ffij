@@ -1,6 +1,4 @@
 
-= THIS BRANCH CONTAINS A PROPOSAL FOR A LICENSE CHANGE AND IS NOT MEANT FOR RELEASE
-
 = gd2-ffij - Ruby FFI Bindings for Thomas Boutell's gd 2.x Graphics Library
 
 The gd2-ffij project page can be found at

@@ -1,6 +1,4 @@
 
-THIS BRANCH CONTAINS A PROPOSAL FOR A LICENSE CHANGE AND IS NOT MEANT FOR RELEASE
-
 Original Ruby/GD2 library placed in public domain by Robert Leslie:
 
 "I hereby relinquish my copyright claim and place the library
@@ -18,7 +16,7 @@ See https://github.com/dark-panda/gd2-ffij/issues/10 ("Consider moving back to
 BSD now that FFI is back to BSD?") for details.
 
 
-Subsequent code added and modified to create gd2-ffij copyright (C) 2010-2013
+Subsequent code added and modified to create gd2-ffij copyright (C) 2010-2015
 J Smith <dark.panda@gmail.com> and published under the MIT license as follows:
 
 Permission is hereby granted, free of charge, to any person
