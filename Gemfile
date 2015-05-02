@@ -6,12 +6,17 @@ gem "rdoc", "~> 3.12"
 gem "rake", "~> 10.0"
 gem "minitest"
 gem "minitest-reporters"
-gem "guard-minitest"
-gem "simplecov"
 
-if RbConfig::CONFIG['host_os'] =~ /^darwin/
-  gem "rb-fsevent"
-  gem "growl"
+platforms :rbx do
+  gem 'rubysl', '~> 2.0'
+  gem 'rubinius-developer_tools'
+end
+
+
+if RUBY_VERSION >= '1.9'
+  gem "simplecov"
+  gem "guard"
+  gem 'guard-minitest'
 end
 
 if File.exists?('Gemfile.local')
