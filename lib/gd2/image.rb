@@ -203,7 +203,13 @@ module GD2
     private_class_method :image_true_color?
 
     def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
-      ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, sx.to_i, sy.to_i))
+      x = sx.to_i
+      y = sy.to_i
+
+      raise ArgumentError, "sx must be > 0" unless x.positive?
+      raise ArgumentError, "sy must be > 0" unless y.positive?
+
+      ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, x, y))
       ::GD2::GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end

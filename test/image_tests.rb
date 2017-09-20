@@ -5,6 +5,24 @@ require './test/test_helper'
 class ImageTest < MiniTest::Unit::TestCase
   include TestHelper
 
+  def test_invalid_image_sizes
+    assert_raises(ArgumentError) do
+      GD2::Image.new(-10, 10)
+    end
+
+    assert_raises(ArgumentError) do
+      GD2::Image.new(0, 10)
+    end
+
+    assert_raises(ArgumentError) do
+      GD2::Image.new(10, -10)
+    end
+
+    assert_raises(ArgumentError) do
+      GD2::Image.new(10, 0)
+    end
+  end
+
   def test_image_new_and_release
     GD2::Image.new(50, 50)
   end
