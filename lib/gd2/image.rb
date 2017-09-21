@@ -138,7 +138,7 @@ module GD2
     # part of the image. Use options :x, :y, :width, and :height to specify the
     # part of the image to import.
     def self.import(filename, options = {})
-      raise Errno::ENOENT.new(filename) unless File.exists?(filename)
+      raise Errno::ENOENT.new(filename) unless File.exist?(filename)
 
       unless format = options.delete(:format)
         md = filename.match(/\.([^.]+)\z/)

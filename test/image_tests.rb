@@ -59,7 +59,7 @@ class ImageTest < MiniTest::Unit::TestCase
         out = File.join(Dir.tmpdir, 'test.#{ext}')
         img.export(out)
 
-        assert(File.exists?(out))
+        assert(File.exist?(out))
 
         imgA = GD2::Image.import(out)
         imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
