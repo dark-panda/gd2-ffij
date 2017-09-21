@@ -2,7 +2,7 @@
 
 require './test/test_helper'
 
-class ImageTest < MiniTest::Unit::TestCase
+class ImageTest < Minitest::Test
   include TestHelper
 
   def test_invalid_image_sizes
