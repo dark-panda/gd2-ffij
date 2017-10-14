@@ -1,25 +1,6 @@
 # encoding: ASCII-8BIT
 #
-# Ruby/GD2 -- Ruby binding for gd 2 graphics library
-#
-# Copyright 2005-2006 Robert Leslie, 2010 J Smith
-#
-# This file is part of Ruby/GD2.
-#
-# Ruby/GD2 is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License, or (at your option)
-# any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-#
+# See COPYRIGHT for license details.
 
 require 'ffi'
 require 'rbconfig'
@@ -33,6 +14,7 @@ module GD2
       @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
         'cyggd-2.dll'
       elsif RbConfig::CONFIG['host_os'] =~ /mingw/
+        ffi_convention(:stdcall)
         'bgd.dll'
       else
         paths = if ENV['GD2_LIBRARY_PATH']
@@ -51,20 +33,14 @@ module GD2
         end
 
         Dir.glob(paths.collect { |path|
-          "#{path}/#{lib}"
+          "#{path}/#{lib}{.*,}"
         }).first
       end
     end
 
     extend FFI::Library
 
-    begin
-      ffi_lib(*gd_library_name)
-    rescue LoadError, NoMethodError
-      raise LoadError.new("Couldn't load the gd2 library.")
-    end
-
-    {
+    FFI_LAYOUT = {
       :gdImageCreate                      => [ :pointer,  :int, :int ],
       :gdImageCreateTrueColor             => [ :pointer,  :int, :int ],
       :gdImageCreatePaletteFromTrueColor  => [ :pointer,  :pointer, :int, :int ],
@@ -155,17 +131,23 @@ module GD2
       :gdFontCacheShutdown                => [ :void ],
       :gdFTUseFontConfig                  => [ :int,      :int ],
       :gdFree                             => [ :void,     :pointer ]
-    }.each do |fun, ary|
-      ret = ary.shift
-      funa = fun
-      if RbConfig::CONFIG['host_os'] =~ /mingw/
-        i = ary.length
-        ary.each { |ar|
-          i += 1 if ar == :double
-        }
-        funa = "#{funa}@#{i * 4}"
+    }
+
+    begin
+      ffi_lib(gd_library_name)
+
+      FFI_LAYOUT.each do |fun, ary|
+        ret = ary.shift
+        begin
+          self.class_eval do
+            attach_function(fun, ary, ret)
+          end
+        rescue FFI::NotFoundError
+          # that's okay
+        end
       end
-      attach_function(fun, funa, ary, ret)      
+    rescue LoadError, NoMethodError
+      raise LoadError.new("Couldn't load the gd2 library.")
     end
   end
 

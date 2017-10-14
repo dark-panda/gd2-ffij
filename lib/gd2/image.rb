@@ -1,25 +1,6 @@
 # encoding: ASCII-8BIT
 #
-# Ruby/GD2 -- Ruby binding for gd 2 graphics library
-#
-# Copyright 2005-2006 Robert Leslie, 2010 J Smith
-#
-# This file is part of Ruby/GD2.
-#
-# Ruby/GD2 is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 of the License, or (at your option)
-# any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-#
+# See COPYRIGHT for license details.
 
 module GD2
   #
@@ -95,7 +76,13 @@ module GD2
         pos = src.pos
         magic = src.read(4)
         src.pos = pos
-        data = File.new(src.path, 'rb').read[pos..-1] # windows read fix
+
+        data = if FFI::Platform.windows?
+          File.open(src.path, 'rb').read[pos..-1]
+        else
+          data = src.read
+        end
+
         data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
         args = [ data.length, data ]
       when String
@@ -116,7 +103,7 @@ module GD2
       type = data_type(magic) or
         raise UnrecognizedImageTypeError, 'Image data format is not recognized'
       ptr = ::GD2::GD2FFI.send(create[type], *args)
-      raise LibraryError unless ptr
+      raise LibraryError if ptr.null?
 
       ptr = FFIStruct::ImagePtr.new(ptr)
 
@@ -151,7 +138,7 @@ module GD2
     # part of the image. Use options :x, :y, :width, and :height to specify the
     # part of the image to import.
     def self.import(filename, options = {})
-      raise Errno::ENOENT.new(filename) unless File.exists?(filename)
+      raise Errno::ENOENT.new(filename) unless File.exist?(filename)
 
       unless format = options.delete(:format)
         md = filename.match(/\.([^.]+)\z/)
@@ -193,7 +180,7 @@ module GD2
         raise UnrecognizedImageTypeError,
           'Format (or file extension) is not recognized' unless create_sym
 
-        file = File.new(filename, 'rb').read
+        file = File.open(filename, 'rb').read
         file = file.force_encoding("ASCII-8BIT") if file.respond_to? :force_encoding
         file_ptr = FFI::MemoryPointer.new(file.size, 1, false)
         file_ptr.put_bytes(0, file)
@@ -216,7 +203,13 @@ module GD2
     private_class_method :image_true_color?
 
     def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
-      ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, sx.to_i, sy.to_i))
+      x = sx.to_i
+      y = sy.to_i
+
+      raise ArgumentError, "sx must be > 0" unless x.positive?
+      raise ArgumentError, "sy must be > 0" unless y.positive?
+
+      ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, x, y))
       ::GD2::GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
@@ -650,7 +643,7 @@ module GD2
     def polar_transform!(radius)
       raise 'Image must be square' unless width == height
       ptr = ::GD2::GD2FFI.send(:gdImageSquareToCircle, image_ptr, radius.to_i)
-      raise LibraryError unless ptr
+      raise LibraryError if ptr.null?
       init_with_image(ptr)
     end
 
@@ -677,7 +670,7 @@ module GD2
     def to_indexed_color(colors = MAX_COLORS, dither = true)
       ptr = ::GD2::GD2FFI.send(:gdImageCreatePaletteFromTrueColor,
         to_true_color.image_ptr, dither ? 1 : 0, colors.to_i)
-      raise LibraryError unless ptr
+      raise LibraryError if ptr.null?
 
       obj = IndexedColor.allocate.init_with_image(ptr)
 

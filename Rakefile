@@ -22,5 +22,5 @@ Rake::RDocTask.new do |t|
   t.title = "gd2-ffij #{version}"
   t.main = 'README.rdoc'
   t.rdoc_dir = 'doc'
-  t.rdoc_files.include('README.rdoc', 'COPYING', 'COPYRIGHT', 'lib/**/*.rb')
+  t.rdoc_files.include('README.rdoc', 'COPYRIGHT', 'lib/**/*.rb')
 end

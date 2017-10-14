@@ -11,7 +11,7 @@ guard 'minitest', :test_folders => 'test', :test_file_patterns => '*_tests.rb' d
   end
 end
 
-if File.exists?('Guardfile.local')
+if File.exist?('Guardfile.local')
   instance_eval File.read('Guardfile.local')
 end
 
