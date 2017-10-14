@@ -4,6 +4,22 @@
 The gd2-ffij project page can be found at
 http://github.com/dark-panda/gd2-ffij .
 
+== Example
+
+gdimg = GD2::Image.import('foo.jpg')
+
+gdimg = gdimg.resize(640,480)
+
+pngstr = gdimg.png
+
+or
+
+gdimg.export('foo.png')
+
+== Documentation
+
+http://www.rubydoc.info/gems/gd2-ffij
+
 == Why FFI
 
 DL just doesn't want to work correctly on my x86_64 linux boxes and on
