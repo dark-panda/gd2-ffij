@@ -21,6 +21,14 @@ class ImageTest < Minitest::Test
     assert_raises(ArgumentError) do
       GD2::Image.new(10, 0)
     end
+
+    assert_raises(GD2::Image::MemoryAllocationError) do
+      n_bytes = [42].pack('i').size
+      n_bits = n_bytes * 8
+      max = 2 ** (n_bits - 2) - 1
+
+      GD2::Image.new(max, max)
+    end
   end
 
   def test_image_new_and_release

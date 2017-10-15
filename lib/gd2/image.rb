@@ -44,6 +44,7 @@ module GD2
   #
   class Image
     class UnrecognizedImageTypeError < StandardError; end
+    class MemoryAllocationError < StandardError; end
 
     attr_reader :image_ptr  #:nodoc:
 
@@ -210,6 +211,9 @@ module GD2
       raise ArgumentError, "sy must be > 0" unless y.positive?
 
       ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, x, y))
+
+      raise MemoryAllocationError, "Could not allocation memory for image" if ptr.null?
+
       ::GD2::GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
