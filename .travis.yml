@@ -15,3 +15,5 @@ addons:
   apt:
     packages:
       - libgd2-noxpm
+before_install:
+  - wget -q -O - https://www.mongodb.org/static/pgp/server-3.2.pub | sudo apt-key add -
