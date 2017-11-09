@@ -1,4 +1,4 @@
-# encoding: ASCII-8BIT
+# frozen_string_literal: true; encoding: ASCII-8BIT
 
 if RUBY_VERSION >= '1.9'
   require 'simplecov'
