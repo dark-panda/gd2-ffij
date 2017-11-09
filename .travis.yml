@@ -1,3 +1,4 @@
+dist: precise
 cache: bundler
 sudo: false
 language: ruby
