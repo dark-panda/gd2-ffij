@@ -12,10 +12,13 @@ version = GD2::VERSION
 
 desc 'Test GD2 interface'
 Rake::TestTask.new(:test) do |t|
+  t.libs << "#{File.dirname(__FILE__)}/test"
   t.test_files = FileList['test/**/*_tests.rb']
   t.verbose = !!ENV['VERBOSE_TESTS']
   t.warning = !!ENV['WARNINGS']
 end
+
+task :default => :test
 
 desc 'Build docs'
 Rake::RDocTask.new do |t|
