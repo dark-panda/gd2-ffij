@@ -77,6 +77,17 @@ class ImageTest < Minitest::Test
         File.unlink(out)
       end
 
+      def test_export_and_import_#{ext}_io
+        img = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2'))
+        out = StringIO.new
+        img.export(out, format: :#{ext})
+
+        imgA = GD2::Image.import(out)
+        imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+
+        assert(imgA == imgB)
+      end
+
       def test_compare_#{ext}
         imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
         imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))

@@ -126,9 +126,30 @@ module GD2
         :wbmp
       when /^gd2/
         :gd2
+      when /^\xff\xff/
+        :gd
       end
     end
     private_class_method :data_type
+
+    def self.extract_format(filename_or_io, options)
+      format = options[:format]
+
+      if !format
+        case filename_or_io
+        when String
+          md = filename_or_io.match(/\.([^.]+)\z/)
+          format = md ? md[1].downcase : nil
+        else
+          magic = filename_or_io.read(4)
+          filename_or_io.seek(-magic.bytes.length, IO::SEEK_CUR)
+          format = data_type(magic.strip)
+        end
+      end
+
+      format = format.to_sym if format
+      format
+    end
 
     # Import an image from a file with the given +filename+. The :format option
     # or the file extension is used to determine the image type (jpeg, png,
@@ -138,21 +159,17 @@ module GD2
     # If the file format is gd2, it is optionally possible to extract only a
     # part of the image. Use options :x, :y, :width, and :height to specify the
     # part of the image to import.
-    def self.import(filename, options = {})
-      raise Errno::ENOENT.new(filename) unless File.exist?(filename)
-
-      unless format = options.delete(:format)
-        md = filename.match(/\.([^.]+)\z/)
-        format = md ? md[1].downcase : nil
-      end
-      format = format.to_sym if format
+    def self.import(filename_or_io, options = {})
+      format = extract_format(filename_or_io, options)
 
       ptr = # TODO: implement xpm and xbm imports
+
       #if format == :xpm
         #raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
         #::GD2::GD2FFI.send(:gdImageCreateFromXpm, filename)
       #elsif format == :xbm
         #::GD2::GD2FFI.send(:gdImageCreateFromXbm, filename)
+
       if format == :gd2 && !options.empty?
         x, y, width, height =
           options.delete(:x) || 0, options.delete(:y) || 0,
@@ -181,12 +198,18 @@ module GD2
         raise UnrecognizedImageTypeError,
           'Format (or file extension) is not recognized' unless create_sym
 
-        file = File.open(filename, 'rb').read
-        file = file.force_encoding("ASCII-8BIT") if file.respond_to? :force_encoding
-        file_ptr = FFI::MemoryPointer.new(file.size, 1, false)
-        file_ptr.put_bytes(0, file)
+        output = case filename_or_io
+        when String
+          File.open(filename_or_io, 'rb').read
+        else
+          filename_or_io.read
+        end
 
-        ::GD2::GD2FFI.send(create_sym, file.size, file_ptr)
+        output = output.force_encoding("ASCII-8BIT") if output.respond_to? :force_encoding
+        file_ptr = FFI::MemoryPointer.new(output.size, 1, false)
+        file_ptr.put_bytes(0, output)
+
+        ::GD2::GD2FFI.send(create_sym, output.size, file_ptr)
       end
       raise LibraryError if ptr.null?
 
@@ -425,17 +448,13 @@ module GD2
       # implemented by subclass
     end
 
-    # Export this image to a file with the given +filename+. The image format
-    # is determined by the :format option, or by the file extension (jpeg, png,
-    # gif, wbmp, gd, or gd2). Returns the size of the written image data.
-    # Additional +options+ are as arguments for the Image#jpeg, Image#png,
-    # Image#wbmp, or Image#gd2 methods.
-    def export(filename, options = {})
-      unless format = options.delete(:format)
-        md = filename.match(/\.([^.]+)\z/)
-        format = md ? md[1].downcase : nil
-      end
-      format = format.to_sym if format
+    # Export this image to a file or stream with the given +filename+. The
+    # image format is determined by the :format option, or by the file
+    # extension (jpeg, png, gif, wbmp, gd, or gd2). Returns the size of the
+    # written image data. Additional +options+ are as arguments for the
+    # Image#jpeg, Image#png, Image#wbmp, or Image#gd2 methods.
+    def export(filename_or_io, options = {})
+      format = self.class.extract_format(filename_or_io, options)
 
       size = FFI::MemoryPointer.new(:pointer)
 
@@ -465,17 +484,24 @@ module GD2
           'Format (or file extension) is not recognized'
       end
 
-      raise ArgumentError, "Unrecognized options #{options.inspect}" unless
-        options.empty?
-
-      File.open(filename, 'wb') do |file|
-        begin
-          img = ::GD2::GD2FFI.send(write_sym, image_ptr, *args)
-          file.write(img.get_bytes(0, size.get_int(0)))
-        ensure
-          ::GD2::GD2FFI.gdFree(img)
-        end
+      output = case filename_or_io
+        when String
+          File.open(filename_or_io, 'wb')
+        else
+          filename_or_io
       end
+
+      begin
+        img = ::GD2::GD2FFI.send(write_sym, image_ptr, *args)
+        output.write(img.get_bytes(0, size.get_int(0)))
+      ensure
+        ::GD2::GD2FFI.gdFree(img)
+      end
+
+      output.flush
+      output.rewind
+
+      output
     end
 
     # Encode and return data for this image in JPEG format. The +quality+
