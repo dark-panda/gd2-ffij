@@ -3,9 +3,9 @@ cache: bundler
 sudo: false
 language: ruby
 rvm:
+  - 2.5.1
   - 2.4.2
   - 2.3.5
-  - 2.2.8
   - rbx-3
   - jruby-head
 matrix:
