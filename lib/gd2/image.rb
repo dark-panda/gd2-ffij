@@ -806,47 +806,4 @@ module GD2
       self
     end
   end
-
-  #
-  # = Description
-  #
-  # AnimtedGif class represents methods to generate animated gif output
-  #
-
-  class AnimatedGif
-
-     def self.pal_copy(to, from)                  #:nodoc:
-       ::GD2::GD2FFI.send(:gdImagePaletteCopy, to.image_ptr, from.image_ptr)
-     end
-
-     def self.gif_anim_begin(ptr)                 #:nodoc:
-       size = FFI::MemoryPointer.new(:int)
-       ptr = ::GD2::GD2FFI.send(:gdImageGifAnimBeginPtr, ptr.image_ptr, size, -1, 0)
-       raise LibraryError if ptr.null?
-       ptr.get_bytes(0, size.get_int(0))
-     ensure
-       ::GD2::GD2FFI.send(:gdFree, ptr)
-     end
-
-     def self.gif_anim_add(ptr, prevptr, delay)   #:nodoc:
-       size = FFI::MemoryPointer.new(:int)
-       ptr = ::GD2::GD2FFI.send(:gdImageGifAnimAddPtr, ptr.image_ptr, size, 0, 0, 0, delay, 1,
-                                (prevptr.nil? ? FFI::Pointer::NULL : prevptr.image_ptr))
-       raise LibraryError if ptr.null?
-       ptr.get_bytes(0, size.get_int(0))
-     ensure
-       ::GD2::GD2FFI.send(:gdFree, ptr)
-     end
-
-     def self.gif_anim_end()                      #:nodoc:
-       size = FFI::MemoryPointer.new(:int)
-       ptr = ::GD2::GD2FFI.send(:gdImageGifAnimEndPtr, size)
-       raise LibraryError if ptr.null?
-       ptr.get_bytes(0, size.get_int(0))
-     ensure
-       ::GD2::GD2FFI.send(:gdFree, ptr)
-     end
-
-  end
-
 end

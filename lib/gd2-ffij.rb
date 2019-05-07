@@ -187,14 +187,24 @@ module GD2
   ALPHA_TRANSPARENT = 127
 
   class LibraryError < StandardError; end
-end
 
-require 'gd2/image'
-require 'gd2/color'
-require 'gd2/palette'
-require 'gd2/canvas'
-require 'gd2/font'
-require 'gd2/ffi_struct'
+  GD2_BASE = File.join(File.dirname(__FILE__), 'gd2')
+
+  autoload :Image,
+    File.join(GD2_BASE, 'image')
+  autoload :Color,
+    File.join(GD2_BASE, 'color')
+  autoload :Palette,
+    File.join(GD2_BASE, 'palette')
+  autoload :Canvas,
+    File.join(GD2_BASE, 'canvas')
+  autoload :Font,
+    File.join(GD2_BASE, 'font')
+  autoload :FFIStruct,
+    File.join(GD2_BASE, 'ffi_struct')
+  autoload :AnimatedGif,
+    File.join(GD2_BASE, 'animated_gif')
+end
 
 class Numeric
   if not self.instance_methods.include? 'degrees'
