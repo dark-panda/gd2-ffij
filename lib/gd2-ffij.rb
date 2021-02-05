@@ -190,20 +190,13 @@ module GD2
 
   GD2_BASE = File.join(File.dirname(__FILE__), 'gd2')
 
-  autoload :Image,
-    File.join(GD2_BASE, 'image')
-  autoload :Color,
-    File.join(GD2_BASE, 'color')
-  autoload :Palette,
-    File.join(GD2_BASE, 'palette')
-  autoload :Canvas,
-    File.join(GD2_BASE, 'canvas')
-  autoload :Font,
-    File.join(GD2_BASE, 'font')
-  autoload :FFIStruct,
-    File.join(GD2_BASE, 'ffi_struct')
-  autoload :AnimatedGif,
-    File.join(GD2_BASE, 'animated_gif')
+  require File.join(GD2_BASE, 'image')
+  require File.join(GD2_BASE, 'color')
+  require File.join(GD2_BASE, 'palette')
+  require File.join(GD2_BASE, 'canvas')
+  require File.join(GD2_BASE, 'font')
+  require File.join(GD2_BASE, 'ffi_struct')
+  require File.join(GD2_BASE, 'animated_gif')
 end
 
 class Numeric
