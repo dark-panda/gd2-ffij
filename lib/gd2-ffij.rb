@@ -109,6 +109,7 @@ module GD2
       :gdImageColorAllocate               => [ :int,      :pointer, :int, :int, :int ],
       :gdImageColorAllocateAlpha          => [ :int,      :pointer, :int, :int, :int, :int ],
       :gdImageColorDeallocate             => [ :void,     :pointer, :int ],
+      :gdImagePaletteToTrueColor          => [ :pointer,  :pointer],
       :gdAlphaBlend                       => [ :int,      :int, :int ],
       :gdImageCopy                        => [ :void,     :pointer, :pointer, :int, :int, :int, :int, :int, :int ],
       :gdImageCopyResized                 => [ :void,     :pointer, :pointer, :int, :int, :int, :int, :int, :int, :int, :int ],

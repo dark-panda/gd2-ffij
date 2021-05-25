@@ -763,12 +763,22 @@ module GD2
     end
 
     def to_true_color   #:nodoc:
-      sz = size
-      obj = TrueColor.new(*sz)
-      obj.alpha_blending = false
-      obj.copy_from(self, 0, 0, 0, 0, *sz)
-      obj.alpha_blending = true
-      obj
+      if ::GD2::GD2FFI.respond_to?(:gdImagePaletteToTrueColor)
+        obj = TrueColor.new(*size)
+        dupped = dup
+        ::GD2::GD2FFI.send(:gdImagePaletteToTrueColor, dupped.image_ptr)
+
+        obj.alpha_blending = false
+        obj.copy_from(dupped, 0, 0, 0, 0, *size)
+        obj.alpha_blending = true
+        obj
+      else
+        obj = TrueColor.new(*size)
+        obj.alpha_blending = false
+        obj.copy_from(self, 0, 0, 0, 0, *size)
+        obj.alpha_blending = true
+        obj
+      end
     end
 
     def to_indexed_color(colors = MAX_COLORS, dither = true)  #:nodoc:
