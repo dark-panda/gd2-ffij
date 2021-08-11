@@ -32,6 +32,24 @@ different so that we can do things The Ruby Way as much as possible.
 
 Most of the documentation for this library is now in RDoc form."
 
+== Troubleshooting
+
+gd2-ffij should "just work"; however, it may have trouble finding
+LibGD or (if you have multiple versions if the library installed) find
+the wrong LibGD.  You can point it at the correct lib in one of the following ways:
+
+1. Before importing gd2-ffij, set global variable
+   <code>$GD2_LIBRARY_FULL_PATH</code> to the absolute path to the
+   shared library.
+
+2. Set environment variable <code>GD2_LIBRARY_FULL_PATH</code> to the
+   absolute path of the LibGD shared object (i.e. the .so/.dylib/.dll
+   file).
+
+3. On *nix (including macOS), you can also set
+   <code>GD2_LIBRARY_PATH</code> to a glob pattern that matches the
+   shared object file.
+
 == Contributing
 
 Patches, bug reports, pull requests, and all other good stuff can be performed
