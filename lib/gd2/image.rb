@@ -38,6 +38,7 @@ module GD2
   #   image.wbmp(fgcolor)
   #   image.gd
   #   image.gd2(fmt = FMT_COMPRESSED)
+  #   image.webp
   #
   # or to a file in a format determined by the filename extension:
   #
@@ -54,6 +55,17 @@ module GD2
     attr_reader :palette
 
     include Enumerable
+
+    FORMAT_CREATE_MAP = {
+      gd: :gdImageCreateFromGdPtr,
+      gd2: :gdImageCreateFromGd2Ptr,
+      gif: :gdImageCreateFromGifPtr,
+      jpeg: :gdImageCreateFromJpegPtr,
+      jpg: :gdImageCreateFromJpegPtr,
+      png: :gdImageCreateFromPngPtr,
+      wbmp: :gdImageCreateFromWBMPPtr,
+      webp: :gdImageCreateFromWebpPtr
+    }.freeze
 
     # Create a new image of the specified dimensions. The default image class
     # is Image::TrueColor; call this method on Image::IndexedColor instead if
@@ -98,10 +110,8 @@ module GD2
           raise TypeError, 'Unexpected argument type'
       end
 
-      create = { jpeg: :gdImageCreateFromJpegPtr, png: :gdImageCreateFromPngPtr, gif: :gdImageCreateFromGifPtr, wbmp: :gdImageCreateFromWBMPPtr, gd2: :gdImageCreateFromGd2Ptr }
-
       type = data_type(magic) or raise UnrecognizedImageTypeError, 'Image data format is not recognized'
-      ptr = ::GD2::GD2FFI.send(create[type], *args)
+      ptr = ::GD2::GD2FFI.send(FORMAT_CREATE_MAP[type], *args)
       raise LibraryError if ptr.null?
 
       ptr = FFIStruct::ImagePtr.new(ptr)
@@ -131,6 +141,8 @@ module GD2
           :gd2
         when /^\xff\xff/
           :gd
+        when /^\x52\x49\x46\x46/
+          :webp
       end
     end
     private_class_method :data_type
@@ -191,7 +203,8 @@ module GD2
           raise ArgumentError, "Unexpected options #{options.inspect}" unless
             options.empty?
 
-          create_sym = { jpeg: :gdImageCreateFromJpegPtr, jpg: :gdImageCreateFromJpegPtr, png: :gdImageCreateFromPngPtr, gif: :gdImageCreateFromGifPtr, wbmp: :gdImageCreateFromWBMPPtr, gd: :gdImageCreateFromGdPtr, gd2: :gdImageCreateFromGd2Ptr }[format]
+          create_sym = FORMAT_CREATE_MAP[format]
+
           raise UnrecognizedImageTypeError, 'Format (or file extension) is not recognized' unless create_sym
 
           output = case filename_or_io
@@ -480,6 +493,9 @@ module GD2
         when :gd2
           write_sym = :gdImageGd2Ptr
           args = [options.delete(:chunk_size) || 0, options.delete(:fmt) || FMT_COMPRESSED, size]
+        when :webp
+          write_sym = :gdImageWebpPtr
+          args = [size]
         else
           raise UnrecognizedImageTypeError, 'Format (or file extension) is not recognized'
       end
