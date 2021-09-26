@@ -34,9 +34,26 @@ module TestHelper
   def load_image(file_name)
     GD2::Image.load(File.read(File.join(PATH_TO_IMAGES, file_name)))
   end
+
+  # Return a list of row coordinates in image that contain at least
+  # one pixel with of the given colour.
+  def rows_with_color(image, color)
+    rows = []
+
+    for y in 0 .. image.height - 1
+      for x in 0 .. image.width - 1
+        if image[x,y] == color
+          rows.push y
+          break
+        end
+      end
+    end
+
+    return rows
+  end
+
 end
 
 if RUBY_VERSION >= '1.9'
   MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)
 end
-

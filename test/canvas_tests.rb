@@ -90,26 +90,65 @@ class CanvasTest < Minitest::Test
 
   def test_text
     image = new_image
+    clr = GD2::Color[32, 64, 128]
     image.draw do |pen|
-      pen.color = image.palette.resolve(GD2::Color[32, 64, 128])
+      pen.color = image.palette.resolve(clr)
       pen.font = GD2::Font::TrueType[PATH_TO_FONT, 32]
       pen.move_to(0, 128)
       pen.text("HELLO")
       pen.move_to(256, 128)
       pen.text("WORLD", Math::PI)
     end
-    assert(image == load_image('test_text.gd2'))
+
+    # The test used to do this
+    #
+    #   assert(image == load_image('test_text.gd2'))
+    #
+    # but the problem is that font rendering tend to be imprecise,
+    # which makes this *really* fragile.  Instead, we just render the
+    # text and make sure it's roughly where we expect it to be
+
+    rows = rows_with_color(image, clr)
+    top = rows[0]
+    bottom = rows[-1]
+
+    # We expect at least 2 rows back.  (Tens of rows, actually)
+    assert(rows.size >= 2)
+
+    # We know row 128 will have text on it
+    assert(top < 128 && bottom > 128)
+
+    # We know the top and bottom should be untouched
+    assert(top > 50 && bottom < 256-50)
   end
 
   def test_text_circle
     image = new_image
+    clr = GD2::Color[32, 64, 128]
     image.draw do |pen|
-      pen.color = image.palette.resolve(GD2::Color[32, 64, 128])
+      pen.color = image.palette.resolve(clr)
       pen.font = GD2::Font::TrueType[PATH_TO_FONT, 32]
       pen.move_to(128, 128)
       pen.text_circle('HELLO', 'WORLD', 100, 20, 1)
     end
-    assert(image == load_image('test_text_circle.gd2'))
+
+    # As with test_text() above, font rendering variations make this
+    # test really fragile so once again, we just poke around the region.
+
+    rows = rows_with_color(image, clr)
+    top = rows[0]
+    bottom = rows[-1]
+
+    # We expect at least 2 rows back.  (Tens of rows, actually)
+    assert(rows.size >= 2)
+
+    # We know that the ring of text occupies most of the image, so the
+    # top and bottom of the text are going to be pretty close to the
+    # top and bottom of the image (which is 256x256).
+    assert(top < 40 && bottom > 210)
+
+    # But there'll be *some* free space
+    assert(top > 10 && bottom < 256-10)
   end
 
   def test_wedge
