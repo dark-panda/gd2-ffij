@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 
@@ -18,12 +19,13 @@ module GD2
   #
   class Palette
     class PaletteFullError < StandardError; end
+
     class ColorNotFoundError < StandardError; end
 
     # The Image associated with this Palette
     attr_reader :image
 
-    def initialize(image)   #:nodoc:
+    def initialize(image) # :nodoc:
       @image = image
     end
 
@@ -33,7 +35,7 @@ module GD2
     end
     alias length size
 
-    def allocated?(index)   #:nodoc:
+    def allocated?(index) # :nodoc:
       @image.image_ptr[:open][index].zero?
     end
     protected :allocated?
@@ -54,9 +56,10 @@ module GD2
     # Return the color allocated to the specified +index+, or *nil* if the
     # entry is unallocated.
     def [](index)
-      index = size + index if index < 0
+      index = size + index if index.negative?
       raise RangeError unless (0...size).include? index
       return nil unless allocated?(index)
+
       get_color(index)
     end
 
@@ -67,9 +70,9 @@ module GD2
     # Image::TrueColor palettes.
     def []=(index, color)
       raise RangeError unless (0...MAX_COLORS).include? index
+
       if color.nil?
-        deallocate(self[index] ||
-          Color.new_from_palette(0, 0, 0, 0, index, self))
+        deallocate(self[index] || Color.new_from_palette(0, 0, 0, 0, index, self))
       else
         ptr = @image.image_ptr
         ptr[:red][index] = color.red
@@ -84,43 +87,42 @@ module GD2
     # otherwise try to allocate the +color+, or if the palette is full, return
     # a color from the palette that is closest to it.
     def resolve(color)
-      raise TypeError unless color.kind_of? Color
-      c = ::GD2::GD2FFI.send(:gdImageColorResolveAlpha, @image.image_ptr,
-        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
+      raise TypeError unless color.is_a? Color
+
+      c = ::GD2::GD2FFI.send(:gdImageColorResolveAlpha, @image.image_ptr, color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
     # Locate the given +color+ in this palette and return it. Returns *nil*
     # if the color is not presently in the palette.
     def exact(color)
-      raise TypeError unless color.kind_of? Color
-      c = ::GD2::GD2FFI.send(:gdImageColorExactAlpha, @image.image_ptr,
-        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
+      raise TypeError unless color.is_a? Color
+
+      c = ::GD2::GD2FFI.send(:gdImageColorExactAlpha, @image.image_ptr, color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
     # Like Palette#exact except an error is raised if the color is not
     # presently in the palette.
     def exact!(color)
-      exact(color) or raise Palette::ColorNotFoundError,
-        "Color #{color} is not in the palette"
+      exact(color) or raise Palette::ColorNotFoundError, "Color #{color} is not in the palette"
     end
 
     # Return the color in this palette that is closest to the given +color+
     # according to Euclidian distance.
     def closest(color)
-      raise TypeError unless color.kind_of? Color
-      c = ::GD2::GD2FFI.send(:gdImageColorClosestAlpha, @image.image_ptr,
-        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
+      raise TypeError unless color.is_a? Color
+
+      c = ::GD2::GD2FFI.send(:gdImageColorClosestAlpha, @image.image_ptr, color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
       c == -1 ? nil : get_color(c)
     end
 
     # Return the color in this palette that is closest to the given +color+
     # according to hue, whiteness, and blackness.
     def closest_hwb(color)
-      raise TypeError unless color.kind_of? Color
-      c = ::GD2::GD2FFI.send(:gdImageColorClosestHWB, @image.image_ptr,
-        color.red.to_i, color.green.to_i, color.blue.to_i)
+      raise TypeError unless color.is_a? Color
+
+      c = ::GD2::GD2FFI.send(:gdImageColorClosestHWB, @image.image_ptr, color.red.to_i, color.green.to_i, color.blue.to_i)
       c == -1 ? nil : get_color(c)
     end
 
@@ -128,17 +130,20 @@ module GD2
     # return it. Does not check whether the color is already allocated, and
     # raises an error for Image::IndexedColor palettes if the palette is full.
     def allocate(color)
-      raise TypeError unless color.kind_of? Color
-      c = ::GD2::GD2FFI.send(:gdImageColorAllocateAlpha, @image.image_ptr,
-        color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
-      c == -1 ? raise(Palette::PaletteFullError, 'Palette is full') :
-        get_color(c)
+      raise TypeError unless color.is_a? Color
+
+      c = ::GD2::GD2FFI.send(:gdImageColorAllocateAlpha, @image.image_ptr, color.red.to_i, color.green.to_i, color.blue.to_i, color.alpha.to_i)
+
+      raise(Palette::PaletteFullError, 'Palette is full') if c == -1
+
+      get_color(c)
     end
 
     # Ensure the given +color+ is present in this palette, allocating it if
     # necessary. Returns the palette so calls may be stacked.
     def <<(color)
       exact(color) or allocate(color)
+
       self
     end
 
@@ -146,6 +151,7 @@ module GD2
     def deallocate(color)
       color = exact(color) unless color.index
       return nil if color.nil? || color.index.nil?
+
       ::GD2::GD2FFI.send(:gdImageColorDeallocate, @image.image_ptr, color.index.to_i)
       nil
     end
@@ -161,35 +167,29 @@ module GD2
   class Palette::IndexedColor < Palette
     include Enumerable
 
-    def inspect   #:nodoc:
+    def inspect # :nodoc:
       "#<#{self.class} [#{used}]>"
     end
 
-    def get_color(index)  #:nodoc:
+    def get_color(index) # :nodoc:
       ptr = @image.image_ptr
-      Color.new_from_palette(
-        ptr[:red][index],
-        ptr[:green][index],
-        ptr[:blue][index],
-        ptr[:alpha][index],
-        index, self)
+      Color.new_from_palette(ptr[:red][index], ptr[:green][index], ptr[:blue][index], ptr[:alpha][index], index, self)
     end
     protected :get_color
 
     # Iterate through every color allocated in this palette.
-    def each  #:yields: color
+    def each # :yields: color
       (0...MAX_COLORS).each do |i|
         color = self[i]
         yield color unless color.nil?
       end
+
       self
     end
 
-    def deallocate_unused   #:nodoc:
-      used = @image.collect.flatten.uniq.inject(Array.new(MAX_COLORS)) do
-          |ary, c|
+    def deallocate_unused # :nodoc:
+      used = @image.collect.flatten.uniq.each_with_object(Array.new(MAX_COLORS)) do |c, ary|
         ary[c] = true
-        ary
       end
       count = 0
       each do |color|
@@ -203,32 +203,32 @@ module GD2
   end
 
   class Palette::TrueColor < Palette
-    def inspect   #:nodoc:
+    def inspect # :nodoc:
       "#<#{self.class}>"
     end
 
-    def size  #:nodoc:
+    def size # :nodoc:
       ((1 + RGB_MAX) ** 3) * (1 + ALPHA_MAX)
     end
     alias length size
     alias used size
 
-    def allocated?(index)   #:nodoc:
+    def allocated?(_index) # :nodoc:
       true
     end
     protected :allocated?
 
     # Return *true*.
-    def include?(color)
+    def include?(_color)
       true
     end
 
-    def get_color(index)  #:nodoc:
+    def get_color(index) # :nodoc:
       Color.new_from_rgba(index)
     end
     protected :get_color
 
-    def []=(index, color)   #:nodoc:
+    def []=(_index, _color)   # :nodoc:
       raise "Palette assignment not supported for #{self.class}"
     end
   end

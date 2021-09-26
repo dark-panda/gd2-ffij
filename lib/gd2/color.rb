@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 
@@ -25,7 +26,7 @@ module GD2
   # associated component will be extracted.
   #
   class Color
-    attr_reader :rgba   #:nodoc:
+    attr_reader :rgba # :nodoc:
 
     # The palette index of this color, if associated with an image palette
     attr_reader :index
@@ -35,21 +36,26 @@ module GD2
 
     alias to_i rgba
 
-    def self.normalize(value, max, component = nil)   #:nodoc:
+    def self.normalize(value, max, component = nil) # :nodoc:
       case value
-      when Integer
-        (value < 0) ? 0 : (value > max) ? max : value
-      when Float
-        normalize((value * max).round, max, component)
-      when Color
-        value.send(component)
-      else
-        return normalize(value.to_i, max) if value.respond_to?(:to_i)
-        raise TypeError
+        when Integer
+          if value.negative?
+            0
+          else
+            value > max ? max : value
+          end
+        when Float
+          normalize((value * max).round, max, component)
+        when Color
+          value.send(component)
+        else
+          return normalize(value.to_i, max) if value.respond_to?(:to_i)
+
+          raise TypeError
       end
     end
 
-    def self.pack(r, g, b, a)   #:nodoc:
+    def self.pack(r, g, b, a) # :nodoc:
       r = r.read_int if r.is_a?(FFI::Pointer)
       g = g.read_int if g.is_a?(FFI::Pointer)
       b = b.read_int if b.is_a?(FFI::Pointer)
@@ -71,15 +77,15 @@ module GD2
       init_with_rgba(self.class.pack(r, g, b, a))
     end
 
-    def self.new_from_rgba(rgba)  #:nodoc:
+    def self.new_from_rgba(rgba) # :nodoc:
       allocate.init_with_rgba(rgba)
     end
 
-    def self.new_from_palette(r, g, b, a, index, palette)   #:nodoc:
+    def self.new_from_palette(r, g, b, a, index, palette) # :nodoc:
       allocate.init_with_rgba(pack(r, g, b, a), index, palette)
     end
 
-    def init_with_rgba(rgba, index = nil, palette = nil)  #:nodoc:
+    def init_with_rgba(rgba, index = nil, palette = nil) # :nodoc:
       @rgba = rgba
       @index = index
       @palette = palette
@@ -99,41 +105,40 @@ module GD2
     # Return a string description of this color.
     def to_s
       s  = 'RGB'
-      s += "A" if alpha != ALPHA_OPAQUE
+      s += 'A' if alpha != ALPHA_OPAQUE
       s += "[#{@index}]" if @index
-      s += '#' + [red, green, blue].map { |e| '%02X' % e }.join('')
+      s += '#' + [red, green, blue].map { |e| '%02X' % e }
+        .join('')
       s += '%02X' % alpha if alpha != ALPHA_OPAQUE
       s
     end
 
-    def inspect   #:nodoc:
-      "<#{to_s}>"
+    def inspect # :nodoc:
+      "<#{self}>"
     end
 
     # Compare this color with another color. Returns *true* if the associated
     # red, green, blue, and alpha components are identical.
     def ==(other)
-      other.kind_of?(Color) && rgba == other.rgba
+      other.is_a?(Color) && rgba == other.rgba
     end
 
     # Return *true* if this color is visually identical to another color.
     def ===(other)
-      self == other || (self.transparent? && other.transparent?)
+      self == other || (transparent? && other.transparent?)
     end
 
     # Compare this color with another color in a manner that takes into account
     # palette identities.
     def eql?(other)
-      self == other &&
-        (palette.nil? || other.palette.nil? ||
-          (palette == other.palette && index == other.index))
+      self == other && (palette.nil? || other.palette.nil? || (palette == other.palette && index == other.index))
     end
 
-    def hash  #:nodoc:
+    def hash # :nodoc:
       rgba.hash
     end
 
-    def rgba=(value)  #:nodoc:
+    def rgba=(value) # :nodoc:
       @rgba = value
       @palette[@index] = self if from_palette?
     end
@@ -147,8 +152,7 @@ module GD2
     # Modify the red component of this color. If this color is associated
     # with a palette entry, this also modifies the palette.
     def red=(value)
-      self.rgba = (rgba & ~0xFF0000) |
-        (self.class.normalize(value, RGB_MAX, :red) << 16)
+      self.rgba = (rgba & ~0xFF0000) | (self.class.normalize(value, RGB_MAX, :red) << 16)
     end
     alias r= red=
 
@@ -161,8 +165,7 @@ module GD2
     # Modify the green component of this color. If this color is associated
     # with a palette entry, this also modifies the palette.
     def green=(value)
-      self.rgba = (rgba & ~0x00FF00) |
-        (self.class.normalize(value, RGB_MAX, :green) << 8)
+      self.rgba = (rgba & ~0x00FF00) | (self.class.normalize(value, RGB_MAX, :green) << 8)
     end
     alias g= green=
 
@@ -175,8 +178,7 @@ module GD2
     # Modify the blue component of this color. If this color is associated
     # with a palette entry, this also modifies the palette.
     def blue=(value)
-      self.rgba = (rgba & ~0x0000FF) |
-        self.class.normalize(value, RGB_MAX, :blue)
+      self.rgba = (rgba & ~0x0000FF) | self.class.normalize(value, RGB_MAX, :blue)
     end
     alias b= blue=
 
@@ -189,8 +191,7 @@ module GD2
     # Modify the alpha component of this color. If this color is associated
     # with a palette entry, this also modifies the palette.
     def alpha=(value)
-      self.rgba = (rgba & ~0xFF000000) |
-        (self.class.normalize(value, ALPHA_MAX, :alpha) << 24)
+      self.rgba = (rgba & ~0xFF000000) | (self.class.normalize(value, ALPHA_MAX, :alpha) << 24)
     end
     alias a= alpha=
 

@@ -43,8 +43,8 @@ class ImageTest < Minitest::Test
     GD2::Image::IndexedColor.new(50, 50)
   end
 
-  [ :png, :gif, :jpg, :wbmp, :gd2 ].each do |ext|
-    self.class_eval(<<-EOF)
+  [:png, :gif, :jpg, :wbmp, :gd2].each do |ext|
+    class_eval(<<~RUBY, __FILE__, __LINE__ + 1)
       def test_load_#{ext}_from_file
         GD2::Image.load(File.open(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
       end
@@ -52,12 +52,12 @@ class ImageTest < Minitest::Test
       def test_load_#{ext}_from_string
         GD2::Image.load(File.read(File.join(PATH_TO_IMAGES, 'test.#{ext}')))
       end
-    EOF
+    RUBY
   end
 
   # TODO: add xbm, xpm and wbmp tests
-  [ :png, :gif, :jpg, :gd, :gd2 ].each do |ext|
-    self.class_eval(<<-EOF)
+  [:png, :gif, :jpg, :gd, :gd2].each do |ext|
+    class_eval(<<~RUBY, __FILE__, __LINE__ + 1)
       def test_import_#{ext}_from_file
         GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
       end
@@ -69,10 +69,10 @@ class ImageTest < Minitest::Test
 
         assert(File.exist?(out))
 
-        imgA = GD2::Image.import(out)
-        imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        img_a = GD2::Image.import(out)
+        img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
 
-        assert(imgA == imgB)
+        assert(img_a == img_b)
 
         File.unlink(out)
       end
@@ -82,24 +82,24 @@ class ImageTest < Minitest::Test
         out = StringIO.new
         img.export(out, format: :#{ext})
 
-        imgA = GD2::Image.import(out)
-        imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        img_a = GD2::Image.import(out)
+        img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
 
-        assert(imgA == imgB)
+        assert(img_a == img_b)
       end
 
       def test_compare_#{ext}
-        imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
-        imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
-        assert_equal(imgA.compare(imgB), 0)
-        assert_equal(imgA.compare(imgA.dup), 0)
+        img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        assert_equal(img_a.compare(img_b), 0)
+        assert_equal(img_a.compare(img_a.dup), 0)
       end
 
       def test_eqeq_#{ext}
-        imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
-        imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
-        assert(imgA == imgB)
-        assert(imgA == imgA.dup)
+        img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
+        assert(img_a == img_b)
+        assert(img_a == img_a.dup)
       end
 
       def test_height_#{ext}
@@ -121,62 +121,62 @@ class ImageTest < Minitest::Test
         img = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.#{ext}'))
         assert_in_delta(img.aspect, 1.0, 0.00000001)
       end
-    EOF
+    RUBY
   end
 
   def test_rotate
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).rotate!(Math::PI)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_rotated_180.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).rotate!(Math::PI)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_rotated_180.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_crop
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).crop!(64, 64, 128, 128)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_cropped.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).crop!(64, 64, 128, 128)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_cropped.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_uncrop
     img = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).crop!(64, 64, 128, 128)
     img.uncrop!(64)
 
-    assert_equal(img.size, [ 256, 256 ])
+    assert_equal(img.size, [256, 256])
   end
 
   def test_resize
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).resize!(512, 512)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_resized.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).resize!(512, 512)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_resized.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_resampled
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).resize!(512, 512, true)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_resampled.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).resize!(512, 512, true)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_resampled.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_polar_transform
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).polar_transform!(100)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_polar_transform.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test.gd2')).polar_transform!(100)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_polar_transform.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_color_sharpened
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).sharpen(100)
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_sharpened.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).sharpen(100)
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_sharpened.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 
   def test_to_indexed_color
-    imgA = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).to_indexed_color
-    imgB = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_indexed.gd2'))
+    img_a = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color.gd2')).to_indexed_color
+    img_b = GD2::Image.import(File.join(PATH_TO_IMAGES, 'test_color_indexed.gd2'))
 
-    assert(imgA == imgB)
+    assert(img_a == img_b)
   end
 end

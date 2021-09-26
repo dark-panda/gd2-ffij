@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 

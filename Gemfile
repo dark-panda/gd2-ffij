@@ -1,25 +1,21 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gemspec
 
-gem "rdoc", "~> 3.12"
-gem "rake", "~> 10.0"
-gem "minitest"
-gem "minitest-reporters"
+gem 'guard'
+gem 'guard-minitest'
+gem 'minitest'
+gem 'minitest-reporters'
+gem 'rake'
+gem 'rdoc'
+gem 'rubocop', require: false
+gem 'simplecov'
 
 platforms :rbx do
-  gem 'rubysl', '~> 2.0'
   gem 'rubinius-developer_tools'
+  gem 'rubysl', '~> 2.0'
 end
 
-
-if RUBY_VERSION >= '1.9'
-  gem "simplecov"
-  gem "guard"
-  gem 'guard-minitest'
-end
-
-if File.exist?('Gemfile.local')
-  instance_eval File.read('Gemfile.local')
-end
-
+instance_eval File.read('Gemfile.local') if File.exist?('Gemfile.local')

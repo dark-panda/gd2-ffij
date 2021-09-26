@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 
@@ -31,52 +32,53 @@ module GD2
   class Font
     private_class_method :new
 
-    def self.font_ptr   #:nodoc:
+    def self.font_ptr # :nodoc:
       ::GD2::GD2FFI.send(font_sym)
     end
 
-    def self.draw(image_ptr, x, y, angle, string, fg)   #:nodoc:
+    def self.draw(image_ptr, x, y, angle, string, fg) # :nodoc:
       raise ArgumentError, "Angle #{angle} not supported for #{self}" unless
         angle == 0.degrees || angle == 90.degrees
 
-      ::GD2::GD2FFI.send(angle > 0 ? :gdImageStringUp : :gdImageString, image_ptr,
+      ::GD2::GD2FFI.send(angle.positive? ? :gdImageStringUp : :gdImageString, image_ptr,
         font_ptr, x.to_i, y.to_i, string, fg.to_i)
       nil
     end
   end
 
   class Font::Small < Font
-    def self.font_sym   #:nodoc:
+    def self.font_sym   # :nodoc:
       :gdFontGetSmall
     end
   end
 
   class Font::Large < Font
-    def self.font_sym   #:nodoc:
+    def self.font_sym   # :nodoc:
       :gdFontGetLarge
     end
   end
 
   class Font::MediumBold < Font
-    def self.font_sym   #:nodoc:
+    def self.font_sym   # :nodoc:
       :gdFontGetMediumBold
     end
   end
 
   class Font::Giant < Font
-    def self.font_sym   #:nodoc:
+    def self.font_sym   # :nodoc:
       :gdFontGetGiant
     end
   end
 
   class Font::Tiny < Font
-    def self.font_sym   #:nodoc:
+    def self.font_sym   # :nodoc:
       :gdFontGetTiny
     end
   end
 
   class Font::TrueType
     class FontconfigError < StandardError; end
+
     class FreeTypeError < StandardError; end
 
     CHARMAP_UNICODE           =   0
@@ -92,14 +94,11 @@ module GD2
     FTEX_FONTCONFIG           =  64
     FTEX_RETURNFONTPATHNAME   = 128
 
-    def self.register(font) #:nodoc:
+    def self.register(font) # :nodoc:
       Thread.current[:fontcount] ||= 0
       Thread.current[:fontcount] += 1
 
-      if Thread.current[:fontcount].zero?
-        raise FreeTypeError, 'FreeType library failed to initialize' unless
-          ::GD2::GD2FFI.send(:gdFontCacheSetup).zero?
-      end
+      raise FreeTypeError, 'FreeType library failed to initialize' if Thread.current[:fontcount].zero? && !::GD2::GD2FFI.send(:gdFontCacheSetup).zero?
 
       ObjectSpace.define_finalizer(font, font_finalizer)
     end
@@ -120,10 +119,8 @@ module GD2
 
     private_class_method :font_finalizer, :unregister
 
-    def self.fontconfig #:nodoc:
-      if Thread.current[:fontconfig].nil?
-        Thread.current[:fontconfig] = false
-      end
+    def self.fontconfig # :nodoc:
+      Thread.current[:fontconfig] = false if Thread.current[:fontconfig].nil?
 
       Thread.current[:fontconfig]
     end
@@ -140,6 +137,7 @@ module GD2
     def self.fontconfig=(want)
       avail = !::GD2::GD2FFI.send(:gdFTUseFontConfig, want ? 1 : 0).zero?
       raise FontconfigError, 'Fontconfig not available' if want && !avail
+
       Thread.current[:fontconfig] = !!want
     end
 
@@ -193,16 +191,19 @@ module GD2
     #   if fontconfig is available. The default is *true*.
     #
     def initialize(fontname, ptsize, options = {})
-      @fontname, @ptsize = fontname, ptsize.to_f
+      @fontname = fontname
+      @ptsize = ptsize.to_f
       @linespacing = options.delete(:linespacing)
       @linespacing = @linespacing.to_f if @linespacing
       @charmap = options.delete(:charmap)
       @hdpi = options.delete(:hdpi)
       @vdpi = options.delete(:vdpi)
-      if dpi = options.delete(:dpi)
+
+      if (dpi = options.delete(:dpi))
         @hdpi ||= dpi
         @vdpi ||= dpi
       end
+
       @kerning = options.delete(:kerning)
       @kerning = true if @kerning.nil?
 
@@ -211,37 +212,39 @@ module GD2
       # Get the font path (and verify existence of file)
 
       strex = strex(false, true)
-      args = [ nil, nil, 0, @fontname, @ptsize, 0.0, 0, 0, '', strex ]
+      args = [nil, nil, 0, @fontname, @ptsize, 0.0, 0, 0, '', strex]
       r = ::GD2::GD2FFI.send(:gdImageStringFTEx, *args)
 
-      raise FreeTypeError.new(r.read_string) unless r.null?
+      raise FreeTypeError, r.read_string unless r.null?
+
       @fontpath = strex[:fontpath].read_string
     ensure
       ::GD2::GD2FFI.send(:gdFree, strex[:fontpath])
     end
 
-    def inspect   #:nodoc:
+    def inspect # :nodoc:
       result  = "#<#{self.class} #{@fontpath.inspect}, #{@ptsize}"
       result += ", :linespacing => #{@linespacing}" if @linespacing
       result += ", :charmap => #{@charmap}" if @charmap
       result += ", :hdpi => #{@hdpi}" if @hdpi
       result += ", :vdpi => #{@vdpi}" if @vdpi
       result += ", :kerning => #{@kerning}" unless @kerning
-      result += '>'
+      result + '>'
     end
 
-    def draw(image_ptr, x, y, angle, string, fg)  #:nodoc:
+    def draw(image_ptr, x, y, angle, string, fg) # :nodoc:
       brect = FFI::MemoryPointer.new(:int, 8)
       strex = strex(true)
-      args = [ image_ptr, brect, fg, @fontname, @ptsize, angle.to_f, x.to_i, y.to_i, string.gsub('&', '&amp;'), strex ]
+      args = [image_ptr, brect, fg, @fontname, @ptsize, angle.to_f, x.to_i, y.to_i, string.gsub('&', '&amp;'), strex]
 
       r = ::GD2::GD2FFI.send(:gdImageStringFTEx, *args)
-      raise FreeTypeError.new(r.read_string) unless r.null?
+      raise FreeTypeError, r.read_string unless r.null?
+
       brect = brect.read_array_of_int(8)
 
       if !strex[:xshow].null? && (xshow = strex[:xshow])
         begin
-          xshow = xshow.read_string.split(' ').map { |e| e.to_f }
+          xshow = xshow.read_string.split.map(&:to_f)
         ensure
           ::GD2::GD2FFI.send(:gdFree, strex[:xshow])
         end
@@ -257,24 +260,20 @@ module GD2
       end
       position[-1] = sum
 
-      { :lower_left   => [brect[0], brect[1]],
-        :lower_right  => [brect[2], brect[3]],
-        :upper_right  => [brect[4], brect[5]],
-        :upper_left   => [brect[6], brect[7]],
-        :position     => position
-      }
+      { lower_left: [brect[0], brect[1]],
+        lower_right: [brect[2], brect[3]],
+        upper_right: [brect[4], brect[5]],
+        upper_left: [brect[6], brect[7]],
+        position: position }
     end
 
     def draw_circle(
       image_ptr, cx, cy, radius, text_radius, fill_portion,
       top, bottom, fgcolor
-    ) #:nodoc:
-      r = ::GD2::GD2FFI.send(
-        :gdImageStringFTCircle, image_ptr, cx.to_i, cy.to_i,
-        radius.to_f, text_radius.to_f, fill_portion.to_f, @fontname, @ptsize,
-        top || '', bottom || '', fgcolor.to_i
-      )
-      raise FreeTypeError.new(r.read_string) unless r.null?
+    ) # :nodoc:
+      r = ::GD2::GD2FFI.send(:gdImageStringFTCircle, image_ptr, cx.to_i, cy.to_i, radius.to_f, text_radius.to_f, fill_portion.to_f, @fontname, @ptsize, top || '', bottom || '', fgcolor.to_i)
+      raise FreeTypeError, r.read_string unless r.null?
+
       nil
     end
 
@@ -306,22 +305,22 @@ module GD2
 
     private
 
-    def strex(xshow = false, returnfontpathname = false)
-      flags = 0
-      flags |= FTEX_LINESPACE           if @linespacing
-      flags |= FTEX_CHARMAP             if @charmap
-      flags |= FTEX_RESOLUTION          if @hdpi || @vdpi
-      flags |= FTEX_DISABLE_KERNING     unless @kerning
-      flags |= FTEX_XSHOW               if xshow
-      flags |= FTEX_RETURNFONTPATHNAME  if returnfontpathname
+      def strex(xshow = false, returnfontpathname = false)
+        flags = 0
+        flags |= FTEX_LINESPACE           if @linespacing
+        flags |= FTEX_CHARMAP             if @charmap
+        flags |= FTEX_RESOLUTION          if @hdpi || @vdpi
+        flags |= FTEX_DISABLE_KERNING     unless @kerning
+        flags |= FTEX_XSHOW               if xshow
+        flags |= FTEX_RETURNFONTPATHNAME  if returnfontpathname
 
-      strex = FFIStruct::FTStringExtraPtr.new
-      strex[:flags] = flags
-      strex[:linespacing] = @linespacing || 0.0
-      strex[:charmap] = @charmap ? @charmap : 0
-      strex[:hdpi] = @hdpi || @vdpi || 0
-      strex[:vdpi] = @vdpi || @hdpi || 0
-      strex
-    end
+        strex = FFIStruct::FTStringExtraPtr.new
+        strex[:flags] = flags
+        strex[:linespacing] = @linespacing || 0.0
+        strex[:charmap] = @charmap || 0
+        strex[:hdpi] = @hdpi || @vdpi || 0
+        strex[:vdpi] = @vdpi || @hdpi || 0
+        strex
+      end
   end
 end

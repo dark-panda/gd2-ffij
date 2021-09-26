@@ -1,12 +1,11 @@
-# frozen_string_literal: true; encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
-if RUBY_VERSION >= '1.9'
-  require 'simplecov'
+require 'simplecov'
 
-  SimpleCov.command_name('Unit Tests')
-  SimpleCov.start do
-    add_filter '/test/'
-  end
+SimpleCov.command_name('Unit Tests')
+SimpleCov.start do
+  add_filter '/test/'
 end
 
 require 'tmpdir'
@@ -14,10 +13,7 @@ require 'tmpdir'
 require 'rubygems'
 require 'gd2-ffij'
 require 'minitest/autorun'
-
-if RUBY_VERSION >= '1.9'
-  require 'minitest/reporters'
-end
+require 'minitest/reporters'
 
 puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL} - #{RbConfig::CONFIG['RUBY_INSTALL_NAME']}"
 puts "ffi version #{Gem.loaded_specs['ffi'].version}" if Gem.loaded_specs['ffi']
@@ -40,20 +36,17 @@ module TestHelper
   def rows_with_color(image, color)
     rows = []
 
-    for y in 0 .. image.height - 1
-      for x in 0 .. image.width - 1
-        if image[x,y] == color
+    (0..image.height - 1).each do |y|
+      (0..image.width - 1).each do |x|
+        if image[x, y] == color
           rows.push y
           break
         end
       end
     end
 
-    return rows
+    rows
   end
-
 end
 
-if RUBY_VERSION >= '1.9'
-  MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)
-end
+MiniTest::Reporters.use!(MiniTest::Reporters::SpecReporter.new)

@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 
@@ -44,9 +45,10 @@ module GD2
   #
   class Image
     class UnrecognizedImageTypeError < StandardError; end
+
     class MemoryAllocationError < StandardError; end
 
-    attr_reader :image_ptr  #:nodoc:
+    attr_reader :image_ptr # :nodoc:
 
     # The Palette object for this image
     attr_reader :palette
@@ -57,8 +59,11 @@ module GD2
     # is Image::TrueColor; call this method on Image::IndexedColor instead if
     # a palette image is desired.
     def self.new(w, h)
-      image = (self == Image) ?
-        TrueColor.new(w, h) : allocate.init_with_size(w, h)
+      image = if self == Image
+        TrueColor.new(w, h)
+      else
+        allocate.init_with_size(w, h)
+      end
 
       block_given? ? yield(image) : image
     end
@@ -71,63 +76,61 @@ module GD2
     # automatically (JPEG, PNG, GIF, WBMP, or GD2). The resulting image will be
     # either of class Image::TrueColor or Image::IndexedColor.
     def self.load(src)
-      src = src.force_encoding("ASCII-8BIT") if src.respond_to? :force_encoding
+      src = src.force_encoding('ASCII-8BIT') if src.respond_to? :force_encoding
       case src
-      when File
-        pos = src.pos
-        magic = src.read(4)
-        src.pos = pos
+        when File
+          pos = src.pos
+          magic = src.read(4)
+          src.pos = pos
 
-        data = if FFI::Platform.windows?
-          File.open(src.path, 'rb').read[pos..-1]
+          data = if FFI::Platform.windows?
+            File.open(src.path, 'rb').read[pos..-1]
+          else
+            data = src.read
+          end
+
+          data = data.force_encoding('ASCII-8BIT') if data.respond_to? :force_encoding
+          args = [data.length, data]
+        when String
+          magic = src.slice(0, 4)
+          args = [src.length, src]
         else
-          data = src.read
-        end
-
-        data = data.force_encoding("ASCII-8BIT") if data.respond_to? :force_encoding
-        args = [ data.length, data ]
-      when String
-        magic = src.slice(0, 4)
-        args = [ src.length, src ]
-      else
-        raise TypeError, 'Unexpected argument type'
+          raise TypeError, 'Unexpected argument type'
       end
 
-      create = {
-        :jpeg => :gdImageCreateFromJpegPtr,
-        :png  => :gdImageCreateFromPngPtr,
-        :gif  => :gdImageCreateFromGifPtr,
-        :wbmp => :gdImageCreateFromWBMPPtr,
-        :gd2  => :gdImageCreateFromGd2Ptr
-      }
+      create = { jpeg: :gdImageCreateFromJpegPtr, png: :gdImageCreateFromPngPtr, gif: :gdImageCreateFromGifPtr, wbmp: :gdImageCreateFromWBMPPtr, gd2: :gdImageCreateFromGd2Ptr }
 
-      type = data_type(magic) or
-        raise UnrecognizedImageTypeError, 'Image data format is not recognized'
+      type = data_type(magic) or raise UnrecognizedImageTypeError, 'Image data format is not recognized'
       ptr = ::GD2::GD2FFI.send(create[type], *args)
       raise LibraryError if ptr.null?
 
       ptr = FFIStruct::ImagePtr.new(ptr)
 
-      image = (image_true_color?(ptr) ?
-        TrueColor : IndexedColor).allocate.init_with_image(ptr)
+      image = (
+        if image_true_color?(ptr)
+          TrueColor
+        else
+          IndexedColor
+        end
+      ).allocate.init_with_image(ptr)
 
       block_given? ? yield(image) : image
     end
 
     def self.data_type(magic)
       case magic
-      when /^\xff\xd8/
-        :jpeg
-      when /^\x89PNG/
-        :png
-      when /^GIF8/
-        :gif
-      when /^\x00/
-        :wbmp
-      when /^gd2/
-        :gd2
-      when /^\xff\xff/
-        :gd
+        when /^\xff\xd8/
+          :jpeg
+        when /^\x89PNG/
+          :png
+        when /^GIF8/
+          :gif
+        when /^\x00/
+          :wbmp
+        when /^gd2/
+          :gd2
+        when /^\xff\xff/
+          :gd
       end
     end
     private_class_method :data_type
@@ -135,15 +138,15 @@ module GD2
     def self.extract_format(filename_or_io, options)
       format = options[:format]
 
-      if !format
+      unless format
         case filename_or_io
-        when String
-          md = filename_or_io.match(/\.([^.]+)\z/)
-          format = md ? md[1].downcase : nil
-        else
-          magic = filename_or_io.read(4)
-          filename_or_io.seek(-magic.bytes.length, IO::SEEK_CUR)
-          format = data_type(magic.strip)
+          when String
+            md = filename_or_io.match(/\.([^.]+)\z/)
+            format = md ? md[1].downcase : nil
+          else
+            magic = filename_or_io.read(4)
+            filename_or_io.seek(-magic.bytes.length, IO::SEEK_CUR)
+            format = data_type(magic.strip)
         end
       end
 
@@ -164,88 +167,86 @@ module GD2
 
       ptr = # TODO: implement xpm and xbm imports
 
-      #if format == :xpm
-        #raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
-        #::GD2::GD2FFI.send(:gdImageCreateFromXpm, filename)
-      #elsif format == :xbm
-        #::GD2::GD2FFI.send(:gdImageCreateFromXbm, filename)
+        # if format == :xpm
+        # raise ArgumentError, "Unexpected options #{options.inspect}" unless options.empty?
+        # ::GD2::GD2FFI.send(:gdImageCreateFromXpm, filename)
+        # elsif format == :xbm
+        # ::GD2::GD2FFI.send(:gdImageCreateFromXbm, filename)
 
-      if format == :gd2 && !options.empty?
-        x, y, width, height =
-          options.delete(:x) || 0, options.delete(:y) || 0,
-          options.delete(:width)  || options.delete(:w),
-          options.delete(:height) || options.delete(:h)
-        raise ArgumentError, "Unexpected options #{options.inspect}" unless
-          options.empty?
-        raise ArgumentError, 'Missing required option :width' if width.nil?
-        raise ArgumentError, 'Missing required option :height' if height.nil?
-        # TODO:
-        ptr = File.open(filename, 'rb') do |file|
-          ::GD2::GD2FFI.send(:gdImageCreateFromGd2Part, file, x.to_i, y.to_i, width.to_i, height.to_i)
-        end
-      else
-        raise ArgumentError, "Unexpected options #{options.inspect}" unless
-          options.empty?
-        create_sym = {
-          :jpeg => :gdImageCreateFromJpegPtr,
-          :jpg  => :gdImageCreateFromJpegPtr,
-          :png  => :gdImageCreateFromPngPtr,
-          :gif  => :gdImageCreateFromGifPtr,
-          :wbmp => :gdImageCreateFromWBMPPtr,
-          :gd   => :gdImageCreateFromGdPtr,
-          :gd2  => :gdImageCreateFromGd2Ptr
-        }[format]
-        raise UnrecognizedImageTypeError,
-          'Format (or file extension) is not recognized' unless create_sym
+        if format == :gd2 && !options.empty?
+          x = options.delete(:x) || 0
+          y = options.delete(:y) || 0
+          width = options.delete(:width) || options.delete(:w)
+          height = options.delete(:height) || options.delete(:h)
+          raise ArgumentError, "Unexpected options #{options.inspect}" unless
+            options.empty?
+          raise ArgumentError, 'Missing required option :width' if width.nil?
+          raise ArgumentError, 'Missing required option :height' if height.nil?
 
-        output = case filename_or_io
-        when String
-          File.open(filename_or_io, 'rb').read
+          # TODO:
+          File.open(filename, 'rb') do |file|
+            ::GD2::GD2FFI.send(:gdImageCreateFromGd2Part, file, x.to_i, y.to_i, width.to_i, height.to_i)
+          end
         else
-          filename_or_io.read
+          raise ArgumentError, "Unexpected options #{options.inspect}" unless
+            options.empty?
+
+          create_sym = { jpeg: :gdImageCreateFromJpegPtr, jpg: :gdImageCreateFromJpegPtr, png: :gdImageCreateFromPngPtr, gif: :gdImageCreateFromGifPtr, wbmp: :gdImageCreateFromWBMPPtr, gd: :gdImageCreateFromGdPtr, gd2: :gdImageCreateFromGd2Ptr }[format]
+          raise UnrecognizedImageTypeError, 'Format (or file extension) is not recognized' unless create_sym
+
+          output = case filename_or_io
+            when String
+              File.open(filename_or_io, 'rb').read
+            else
+              filename_or_io.read
+          end
+
+          output = output.force_encoding('ASCII-8BIT') if output.respond_to? :force_encoding
+          file_ptr = FFI::MemoryPointer.new(output.size, 1, false)
+          file_ptr.put_bytes(0, output)
+
+          ::GD2::GD2FFI.send(create_sym, output.size, file_ptr)
         end
-
-        output = output.force_encoding("ASCII-8BIT") if output.respond_to? :force_encoding
-        file_ptr = FFI::MemoryPointer.new(output.size, 1, false)
-        file_ptr.put_bytes(0, output)
-
-        ::GD2::GD2FFI.send(create_sym, output.size, file_ptr)
-      end
       raise LibraryError if ptr.null?
 
       ptr = FFIStruct::ImagePtr.new(ptr)
 
-      image = (image_true_color?(ptr) ?
-        TrueColor : IndexedColor).allocate.init_with_image(ptr)
+      image = (
+        if image_true_color?(ptr)
+          TrueColor
+        else
+          IndexedColor
+        end
+      ).allocate.init_with_image(ptr)
 
       block_given? ? yield(image) : image
     end
 
     def self.image_true_color?(ptr)
-      not ptr[:trueColor].zero?
+      !ptr[:trueColor].zero?
     end
     private_class_method :image_true_color?
 
-    def self.create_image_ptr(sx, sy, alpha_blending = true)  #:nodoc:
+    def self.create_image_ptr(sx, sy, alpha_blending = true) # :nodoc:
       x = sx.to_i
       y = sy.to_i
 
-      raise ArgumentError, "sx must be > 0" unless x.positive?
-      raise ArgumentError, "sy must be > 0" unless y.positive?
+      raise ArgumentError, 'sx must be > 0' unless x.positive?
+      raise ArgumentError, 'sy must be > 0' unless y.positive?
 
       ptr = FFIStruct::ImagePtr.new(::GD2::GD2FFI.send(create_image_sym, x, y))
 
-      raise MemoryAllocationError, "Could not allocation memory for image" if ptr.null?
+      raise MemoryAllocationError, 'Could not allocation memory for image' if ptr.null?
 
       ::GD2::GD2FFI.send(:gdImageAlphaBlending, ptr, alpha_blending ? 1 : 0)
       ptr
     end
 
-    def init_with_size(sx, sy)  #:nodoc:
+    def init_with_size(sx, sy) # :nodoc:
       init_with_image self.class.create_image_ptr(sx, sy)
     end
 
-    def init_with_image(ptr)  #:nodoc:
+    def init_with_image(ptr) # :nodoc:
       @image_ptr = if ptr.is_a?(FFIStruct::ImagePtr)
         ptr
       else
@@ -257,7 +258,7 @@ module GD2
       self
     end
 
-    def inspect   #:nodoc:
+    def inspect # :nodoc:
       "#<#{self.class} #{size.inspect}>"
     end
 
@@ -282,7 +283,7 @@ module GD2
 
     # Return true if this image is a TrueColor image.
     def true_color?
-      kind_of?(TrueColor)
+      is_a?(TrueColor)
       # self.class.image_true_color?(image_ptr)
     end
 
@@ -335,9 +336,8 @@ module GD2
     # pixel values.
     def each
       (0...height).each do |y|
-        row = (0...width).inject(Array.new(width)) do |r, x|
+        row = (0...width).each_with_object(Array.new(width)) do |x, r|
           r[x] = get_pixel(x, y)
-          r
         end
         yield row
       end
@@ -356,7 +356,7 @@ module GD2
     # Return *true* if this image will be stored in interlaced form when output
     # as PNG or JPEG.
     def interlaced?
-      not image_ptr[:interlace].zero?
+      !image_ptr[:interlace].zero?
     end
 
     # Set whether this image will be stored in interlaced form when output as
@@ -369,7 +369,7 @@ module GD2
     # are modified. Returns *false* if colors will be copied verbatim into the
     # image without alpha blending when pixels are modified.
     def alpha_blending?
-      not image_ptr[:alphaBlendingFlag].zero?
+      !image_ptr[:alphaBlendingFlag].zero?
     end
 
     # Set whether colors should be alpha blended with existing colors when
@@ -382,7 +382,7 @@ module GD2
     # Return *true* if this image will be stored with full alpha channel
     # information when output as PNG.
     def save_alpha?
-      not image_ptr[:saveAlphaFlag].zero?
+      !image_ptr[:saveAlphaFlag].zero?
     end
 
     # Set whether this image will be stored with full alpha channel information
@@ -413,13 +413,13 @@ module GD2
       y2 = FFI::MemoryPointer.new(:pointer)
 
       ::GD2::GD2FFI.send(:gdImageGetClip, image_ptr, x1, y1, x2, y2)
-      [ x1.read_int, y1.read_int, x2.read_int, y2.read_int ]
+      [x1.read_int, y1.read_int, x2.read_int, y2.read_int]
     end
 
     # Temporarily set the clipping rectangle during the execution of a block.
     # Pixels outside this rectangle will not be modified by drawing or copying
     # operations.
-    def with_clipping(x1, y1, x2, y2)   #:yields: image
+    def with_clipping(x1, y1, x2, y2) # :yields: image
       clip = clipping
       begin
         ::GD2::GD2FFI.send(:gdImageSetClip, image_ptr, x1.to_i, y1.to_i, x2.to_i, y2.to_i)
@@ -436,7 +436,7 @@ module GD2
     end
 
     # Provide a drawing environment for a block. See GD2::Canvas.
-    def draw  #:yields: canvas
+    def draw # :yields: canvas
       yield Canvas.new(self)
       self
     end
@@ -459,29 +459,29 @@ module GD2
       size = FFI::MemoryPointer.new(:pointer)
 
       case format
-      when :jpeg, :jpg
-        write_sym = :gdImageJpegPtr
-        args = [ size, options.delete(:quality) || -1 ]
-      when :png
-        write_sym = :gdImagePngPtrEx
-        args = [ size, options.delete(:level) || -1 ]
-      when :gif
-        write_sym = :gdImageGifPtr
-        args = [ size ]
-      when :wbmp
-        write_sym = :gdImageWBMPPtr
-        fgcolor = options.delete(:fgcolor)
-        raise ArgumentError, 'Missing required option :fgcolor' if fgcolor.nil?
-        args = [size, color2pixel(fgcolor)]
-      when :gd
-        write_sym = :gdImageGdPtr
-        args = [ size ]
-      when :gd2
-        write_sym = :gdImageGd2Ptr
-        args = [ options.delete(:chunk_size) || 0, options.delete(:fmt) || FMT_COMPRESSED, size ]
-      else
-        raise UnrecognizedImageTypeError,
-          'Format (or file extension) is not recognized'
+        when :jpeg, :jpg
+          write_sym = :gdImageJpegPtr
+          args = [size, options.delete(:quality) || -1]
+        when :png
+          write_sym = :gdImagePngPtrEx
+          args = [size, options.delete(:level) || -1]
+        when :gif
+          write_sym = :gdImageGifPtr
+          args = [size]
+        when :wbmp
+          write_sym = :gdImageWBMPPtr
+          fgcolor = options.delete(:fgcolor)
+          raise ArgumentError, 'Missing required option :fgcolor' if fgcolor.nil?
+
+          args = [size, color2pixel(fgcolor)]
+        when :gd
+          write_sym = :gdImageGdPtr
+          args = [size]
+        when :gd2
+          write_sym = :gdImageGd2Ptr
+          args = [options.delete(:chunk_size) || 0, options.delete(:fmt) || FMT_COMPRESSED, size]
+        else
+          raise UnrecognizedImageTypeError, 'Format (or file extension) is not recognized'
       end
 
       output = case filename_or_io
@@ -505,7 +505,7 @@ module GD2
     end
 
     # Encode and return data for this image in JPEG format. The +quality+
-    # argument should be in the range 0–95, with higher quality values usually
+    # argument should be in the range 0-95, with higher quality values usually
     # implying both higher quality and larger sizes.
     def jpeg(quality = nil)
       size = FFI::MemoryPointer.new(:pointer)
@@ -516,7 +516,7 @@ module GD2
     end
 
     # Encode and return data for this image in PNG format. The +level+
-    # argument should be in the range 0–9 indicating the level of lossless
+    # argument should be in the range 0-9 indicating the level of lossless
     # compression (0 = none, 1 = minimal but fast, 9 = best but slow).
     def png(level = nil)
       size = FFI::MemoryPointer.new(:pointer)
@@ -541,7 +541,7 @@ module GD2
     # Encode and return data for this image in WBMP format. WBMP currently
     # supports only black and white images; the specified +fgcolor+ will be
     # used as the foreground color (black), and all other colors will be
-    # considered “background” (white).
+    # considered "background" (white).
     def wbmp(fgcolor)
       size = FFI::MemoryPointer.new(:pointer)
       ptr = ::GD2::GD2FFI.send(:gdImageWBMPPtr, image_ptr, size, color2pixel(fgcolor))
@@ -550,7 +550,7 @@ module GD2
       ::GD2::GD2FFI.send(:gdFree, ptr)
     end
 
-    # Encode and return data for this image in “.gd” format. This is an
+    # Encode and return data for this image in ".gd" format. This is an
     # internal format used by the gd library to quickly read and write images.
     def gd
       size = FFI::MemoryPointer.new(:pointer)
@@ -560,7 +560,7 @@ module GD2
       ::GD2::GD2FFI.send(:gdFree, ptr)
     end
 
-    # Encode and return data for this image in “.gd2” format. This is an
+    # Encode and return data for this image in ".gd2" format. This is an
     # internal format used by the gd library to quickly read and write images.
     # The specified +fmt+ may be either GD2::FMT_RAW or GD2::FMT_COMPRESSED.
     def gd2(fmt = FMT_COMPRESSED, chunk_size = 0)
@@ -575,14 +575,13 @@ module GD2
     # specified, the indicated portion of the source image will be resized
     # (and resampled) to fit the indicated dimensions of the destination.
     def copy_from(other, dst_x, dst_y, src_x, src_y,
-        dst_w, dst_h, src_w = nil, src_h = nil)
+                  dst_w, dst_h, src_w = nil, src_h = nil)
       raise ArgumentError unless src_w.nil? == src_h.nil?
+
       if src_w
-        ::GD2::GD2FFI.send(:gdImageCopyResampled, image_ptr, other.image_ptr,
-          dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i, src_w.to_i, src_h.to_i)
+        ::GD2::GD2FFI.send(:gdImageCopyResampled, image_ptr, other.image_ptr, dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i, src_w.to_i, src_h.to_i)
       else
-        ::GD2::GD2FFI.send(:gdImageCopy, image_ptr, other.image_ptr,
-          dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i)
+        ::GD2::GD2FFI.send(:gdImageCopy, image_ptr, other.image_ptr, dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, dst_w.to_i, dst_h.to_i)
       end
       self
     end
@@ -592,8 +591,7 @@ module GD2
     # +dst_y+ arguments indicate the _center_ of the desired destination, and
     # may be floating point.
     def copy_from_rotated(other, dst_x, dst_y, src_x, src_y, w, h, angle)
-      ::GD2::GD2FFI.send(:gdImageCopyRotated, image_ptr, other.image_ptr,
-        dst_x.to_f, dst_y.to_f, src_x.to_i, src_y.to_i, w.to_i, h.to_i, angle.to_degrees.round.to_i)
+      ::GD2::GD2FFI.send(:gdImageCopyRotated, image_ptr, other.image_ptr, dst_x.to_f, dst_y.to_f, src_x.to_i, src_y.to_i, w.to_i, h.to_i, angle.to_degrees.round.to_i)
       self
     end
 
@@ -602,8 +600,7 @@ module GD2
     # Image#copy_from; a percentage of 0.0 is a no-op. Note that alpha
     # channel information from the source image is ignored.
     def merge_from(other, dst_x, dst_y, src_x, src_y, w, h, pct)
-      ::GD2::GD2FFI.send(:gdImageCopyMerge, image_ptr, other.image_ptr,
-        dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
+      ::GD2::GD2FFI.send(:gdImageCopyMerge, image_ptr, other.image_ptr, dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
       self
     end
 
@@ -611,8 +608,7 @@ module GD2
     # coordinates. Note that some of the edges of the image may be lost.
     def rotate!(angle, axis_x = width / 2.0, axis_y = height / 2.0)
       ptr = self.class.create_image_ptr(width, height, alpha_blending?)
-      ::GD2::GD2FFI.send(:gdImageCopyRotated, ptr, image_ptr,
-        axis_x.to_f, axis_y.to_f, 0, 0, width.to_i, height.to_i, angle.to_degrees.round.to_i)
+      ::GD2::GD2FFI.send(:gdImageCopyRotated, ptr, image_ptr, axis_x.to_f, axis_y.to_f, 0, 0, width.to_i, height.to_i, angle.to_degrees.round.to_i)
       init_with_image(ptr)
     end
 
@@ -637,8 +633,7 @@ module GD2
     # Expand the left, top, right, and bottom borders of this image by the
     # given number of pixels.
     def uncrop!(x1, y1 = x1, x2 = x1, y2 = y1)
-      ptr = self.class.create_image_ptr(x1 + width + x2, y1 + height + y2,
-        alpha_blending?)
+      ptr = self.class.create_image_ptr(x1 + width + x2, y1 + height + y2, alpha_blending?)
       ::GD2::GD2FFI.send(:gdImageCopy, ptr, image_ptr, x1.to_i, y1.to_i, 0, 0, width.to_i, height.to_i)
       init_with_image(ptr)
     end
@@ -666,14 +661,16 @@ module GD2
       clone.resize!(w, h, resample)
     end
 
-    # Transform this image into a new image of width and height +radius+ × 2,
-    # in which the X axis of the original has been remapped to θ (angle) and
-    # the Y axis of the original has been remapped to ρ (distance from center).
+    # Transform this image into a new image of width and height +radius+ * 2,
+    # in which the X axis of the original has been remapped to angle and
+    # the Y axis of the original has been remapped to distance from center.
     # Note that the original image must be square.
     def polar_transform!(radius)
       raise 'Image must be square' unless width == height
+
       ptr = ::GD2::GD2FFI.send(:gdImageSquareToCircle, image_ptr, radius.to_i)
       raise LibraryError if ptr.null?
+
       init_with_image(ptr)
     end
 
@@ -685,7 +682,7 @@ module GD2
     # Sharpen this image by +pct+ (a percentage) which can be greater than 1.0.
     # Transparency/alpha channel are not altered. This has no effect on
     # IndexedColor images.
-    def sharpen(pct)
+    def sharpen(_pct)
       self
     end
 
@@ -721,36 +718,35 @@ module GD2
   # object.
   #
   class Image::IndexedColor < Image
-    def self.create_image_sym   #:nodoc:
+    def self.create_image_sym # :nodoc:
       :gdImageCreate
     end
 
-    def self.palette_class  #:nodoc:
+    def self.palette_class  # :nodoc:
       Palette::IndexedColor
     end
 
-    def pixel2color(pixel)  #:nodoc:
+    def pixel2color(pixel)  # :nodoc:
       palette[pixel]
     end
 
-    def color2pixel(color)  #:nodoc:
+    def color2pixel(color)  # :nodoc:
       color.from_palette?(palette) ? color.index : palette.exact!(color).index
     end
 
-    def alpha_blending?   #:nodoc:
+    def alpha_blending? # :nodoc:
       false
     end
 
-    def alpha_blending=(bool)   #:nodoc:
+    def alpha_blending=(bool) # :nodoc:
       raise 'Alpha blending mode not available for indexed color images' if bool
     end
 
-    def optimize_palette  #:nodoc:
+    def optimize_palette # :nodoc:
       # first map duplicate colors to a single palette index
-      map, cache = palette.inject([{}, Array.new(MAX_COLORS)]) do |ary, color|
+      map, cache = palette.each_with_object([{}, Array.new(MAX_COLORS)]) do |color, ary|
         ary.at(0)[color.rgba] = color.index
         ary.at(1)[color.index] = color.rgba
-        ary
       end
       each_with_index do |row, y|
         row.each_with_index do |pixel, x|
@@ -762,26 +758,26 @@ module GD2
       palette.deallocate_unused
     end
 
-    def to_true_color   #:nodoc:
+    def to_true_color # :nodoc:
+      obj = TrueColor.new(*size)
+
       if ::GD2::GD2FFI.respond_to?(:gdImagePaletteToTrueColor)
-        obj = TrueColor.new(*size)
         dupped = dup
         ::GD2::GD2FFI.send(:gdImagePaletteToTrueColor, dupped.image_ptr)
 
         obj.alpha_blending = false
         obj.copy_from(dupped, 0, 0, 0, 0, *size)
-        obj.alpha_blending = true
-        obj
       else
-        obj = TrueColor.new(*size)
         obj.alpha_blending = false
         obj.copy_from(self, 0, 0, 0, 0, *size)
-        obj.alpha_blending = true
-        obj
       end
+
+      obj.alpha_blending = true
+
+      obj
     end
 
-    def to_indexed_color(colors = MAX_COLORS, dither = true)  #:nodoc:
+    def to_indexed_color(colors = MAX_COLORS, dither = true) # :nodoc:
       palette.used <= colors ? self : super
     end
 
@@ -790,8 +786,8 @@ module GD2
     # grey scale before the merge.
     def merge_from(other, dst_x, dst_y, src_x, src_y, w, h, pct, gray = false)
       return super(other, dst_x, dst_y, src_x, src_y, w, h, pct) unless gray
-      ::GD2::GD2FFI.send(:gdImageCopyMergeGray, image_ptr, other.image_ptr,
-        dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
+
+      ::GD2::GD2FFI.send(:gdImageCopyMergeGray, image_ptr, other.image_ptr, dst_x.to_i, dst_y.to_i, src_x.to_i, src_y.to_i, w.to_i, h.to_i, pct.to_percent.round.to_i)
       self
     end
   end
@@ -803,15 +799,15 @@ module GD2
   # limitations.
   #
   class Image::TrueColor < Image
-    def self.create_image_sym   #:nodoc:
+    def self.create_image_sym # :nodoc:
       :gdImageCreateTrueColor
     end
 
-    def self.palette_class  #:nodoc:
+    def self.palette_class # :nodoc:
       Palette::TrueColor
     end
 
-    def sharpen(pct)  #:nodoc:
+    def sharpen(pct)  # :nodoc:
       ::GD2::GD2FFI.send(:gdImageSharpen, image_ptr, pct.to_percent.round.to_i)
       self
     end

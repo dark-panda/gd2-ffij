@@ -1,4 +1,5 @@
 # frozen_string_literal: true; encoding: ASCII-8BIT
+
 #
 # See COPYRIGHT for license details.
 
@@ -21,23 +22,23 @@ module GD2::FFIStruct
       :sx,                :int,
       :sy,                :int,
       :colorsTotal,       :int,
-      :red,               [ :int, 256 ],
-      :green,             [ :int, 256 ],
-      :blue,              [ :int, 256 ],
-      :open,              [ :int, 256 ],
+      :red,               [:int, 256],
+      :green,             [:int, 256],
+      :blue,              [:int, 256],
+      :open,              [:int, 256],
       :transparent,       :int,
       :polyInts,          :pointer, # int*
       :polyAllocated,     :int,
       :brush,             :pointer, # gdImageStruct*
       :tile,              :pointer, # gdImageStruct*
-      :brushColorMap,     [ :int, 256 ],
-      :tileColorMap,      [ :int, 256 ],
+      :brushColorMap,     [:int, 256],
+      :tileColorMap,      [:int, 256],
       :styleLength,       :int,
       :stylePos,          :int,
       :style,             :pointer, # int*,
       :interlace,         :int,
       :thick,             :int,
-      :alpha,             [ :int, 256 ],
+      :alpha,             [:int, 256],
       :trueColor,         :int,
       :tpixels,           :pointer, # int**
       :alphaBlendingFlag, :int,

@@ -36,11 +36,7 @@ class CanvasTest < Minitest::Test
     image = new_image
     image.draw do |pen|
       pen.color = image.palette.resolve(GD2::Color[255, 255, 255])
-      pen.polygon([
-        [ 64, 64 ],
-        [ 192, 192 ],
-        [ 64, 128 ]
-      ])
+      pen.polygon([[64, 64], [192, 192], [64, 128]])
     end
     assert(image == load_image('test_canvas_polygon.gd2'))
   end
@@ -49,11 +45,7 @@ class CanvasTest < Minitest::Test
     image = new_image
     image.draw do |pen|
       pen.color = image.palette.resolve(GD2::Color[255, 255, 255])
-      pen.polygon([
-        [ 64, 64 ],
-        [ 192, 192 ],
-        [ 64, 128 ]
-      ], true)
+      pen.polygon([[64, 64], [192, 192], [64, 128]], true)
     end
     assert(image == load_image('test_canvas_filled_polygon.gd2'))
   end
@@ -95,9 +87,9 @@ class CanvasTest < Minitest::Test
       pen.color = image.palette.resolve(clr)
       pen.font = GD2::Font::TrueType[PATH_TO_FONT, 32]
       pen.move_to(0, 128)
-      pen.text("HELLO")
+      pen.text('HELLO')
       pen.move_to(256, 128)
-      pen.text("WORLD", Math::PI)
+      pen.text('WORLD', Math::PI)
     end
 
     # The test used to do this
@@ -119,7 +111,7 @@ class CanvasTest < Minitest::Test
     assert(top < 128 && bottom > 128)
 
     # We know the top and bottom should be untouched
-    assert(top > 50 && bottom < 256-50)
+    assert(top > 50 && bottom < 256 - 50)
   end
 
   def test_text_circle
@@ -148,7 +140,7 @@ class CanvasTest < Minitest::Test
     assert(top < 40 && bottom > 210)
 
     # But there'll be *some* free space
-    assert(top > 10 && bottom < 256-10)
+    assert(top > 10 && bottom < 256 - 10)
   end
 
   def test_wedge
@@ -211,7 +203,7 @@ class CanvasTest < Minitest::Test
       blue = image.palette.resolve(GD2::Color[32, 64, 128])
       red  = image.palette.resolve(GD2::Color[255, 0, 0])
       pen.color = blue
-      pen.arc(128, 128, 256, 64, 0..(Math::PI))
+      pen.arc(128, 128, 256, 64, 0..Math::PI)
       pen.color = red
       pen.move(128, 128)
       pen.fill_to(blue)
