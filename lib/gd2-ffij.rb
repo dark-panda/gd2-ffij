@@ -7,35 +7,82 @@ require 'rbconfig'
 require 'gd2/version'
 
 module GD2
+
+  class LibraryError < StandardError; end
+
   module GD2FFI
+
+    ##
+    # Search for the path to LibGD and return it.
+    #
+    # If global variable $GD2_LIBRARY_FULL_PATH is set and not nil, it
+    # will be used as the path to the shared library.
+    #
+    # Otherwise, if environment variable GD2_LIBRARY_FULL_PATH is set
+    # and not empty, it will be used as the path to the shared library.
+    #
+    # If neither of these are set to a valid path, search for the lib
+    # based on the current platform.  On *nix platforms (including
+    # macOS), a set of likely directories will be searched unless the
+    # environment variable GD2_LIBRARY_PATH is set; in that case, its
+    # value will be used as the *DIRECTORY* to search for the lib.
+    #
+    # The path to the found library is cached internally and returned by
+    # subsequent calls, so filesystem changes will have no effect on
+    # the result.
+    #
+    # If no library path is found, raises a LibraryError exception.
     def self.gd_library_name
       return @gd_library_name if defined?(@gd_library_name)
 
-      @gd_library_name = if RbConfig::CONFIG['host_os'] == 'cygwin'
-        'cyggd-2.dll'
+      # Check for the global
+      @gd_library_name = $GD2_LIBRARY_FULL_PATH
+      return @gd_library_name if @gd_library_name
+
+      # Check for the environment variable
+      @gd_library_name = ENV['GD2_LIBRARY_FULL_PATH']
+      return @gd_library_name if @gd_library_name && @gd_library_name != ""
+
+
+      # Otherwise, we look for the lib:
+
+      # Is it cygwin?
+      if RbConfig::CONFIG['host_os'] == 'cygwin'
+        @gd_library_name = 'cyggd-2.dll'
+
+      # Or Windows with MinGW?
       elsif RbConfig::CONFIG['host_os'] =~ /mingw/
         ffi_convention(:stdcall)
-        'bgd.dll'
+        @gd_library_name = 'bgd.dll'
+
+      # Otherwise, we assume something *nix-like
       else
-        paths = if ENV['GD2_LIBRARY_PATH']
-          [ ENV['GD2_LIBRARY_PATH'] ]
-        else
-          [ '/usr/local/{lib64,lib}', '/opt/local/{lib64,lib}', '/usr/{lib64,lib}', '/usr/lib/{x86_64,i386}-linux-gnu' ]
-        end
 
-        lib = if [
-          RbConfig::CONFIG['arch'],
-          RbConfig::CONFIG['host_os']
+        looks_like_mac_os = [
+          RbConfig::CONFIG['arch'], RbConfig::CONFIG['host_os']
         ].detect { |c| c =~ /darwin/ }
-          'libgd.dylib'
-        else
-          'libgd.so'
-        end
 
-        Dir.glob(paths.collect { |path|
-          "#{path}/#{lib}{.*,}"
-        }).first
+        lib = looks_like_mac_os ? 'libgd.dylib' : 'libgd.so'
+
+        # Let the user set a lib dir if they want to; otherwise, we
+        # check the usual suspects.
+        paths = [ '/usr/local/{lib64,lib}', '/opt/local/{lib64,lib}',
+                  '/usr/{lib64,lib}', '/usr/lib/{x86_64,i386}-linux-gnu',
+                  '/usr/lib/arm-linux*',
+                ]
+        envpath = ENV['GD2_LIBRARY_PATH']
+        paths = [ envpath ] if envpath && envpath != ''
+
+
+
+        @gd_library_name =
+          Dir.glob( paths.collect { |path| "#{path}/#{lib}{.*,}"} ).first
       end
+
+      raise LibraryError.new("Unable to find the LibGD dynamic library") unless
+        @gd_library_name
+
+      return @gd_library_name
     end
 
     extend FFI::Library
@@ -186,8 +233,6 @@ module GD2
   ALPHA_MAX         = 127
   ALPHA_OPAQUE      =   0
   ALPHA_TRANSPARENT = 127
-
-  class LibraryError < StandardError; end
 
   GD2_BASE = File.join(File.dirname(__FILE__), 'gd2')
 
