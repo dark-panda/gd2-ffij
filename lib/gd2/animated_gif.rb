@@ -65,15 +65,15 @@ class GD2::AnimatedGif
 
       @frames = []
 
-      ObjectSpace.define_finalizer(@frames, frames_finalizer)
+      ObjectSpace.define_finalizer(self, self.class.frames_finalizer(@frames))
 
       @frames
     end
 
-    def frames_finalizer
+    def self.frames_finalizer(frames)
       proc do
-        each do |frame|
-          ::GD2::GD2FFI.send(:gdFree, frame[:frame_ptr])
+        frames.each do |frame|
+          ::GD2::GD2FFI.send(:gdFree, frame[:ptr])
         end
       end
     end
